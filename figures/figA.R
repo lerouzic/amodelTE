@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-source("amodel1.R")
+source("../src/amodel.R")
 
 pdf("figA.pdf", width=8, height=4)
 
