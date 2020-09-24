@@ -1,0 +1,166 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+
+
+%~ \usepackage{cite}
+%~ \makeatletter
+%~ \renewcommand{\@biblabel}[1]{\quad#1.}
+%~ \makeatother
+
+
+\usepackage{nameref}
+\usepackage[colorlinks=true,citecolor={Gray}]{hyperref}
+\usepackage[right]{lineno}
+
+\usepackage{url}
+
+\usepackage[top=0.85in,left=2.75in,footskip=0.75in,marginparwidth=2in]{geometry}
+
+% headrule, footrule and page numbers
+\usepackage{lastpage,fancyhdr,graphicx}
+\usepackage{epstopdf}
+\pagestyle{myheadings}
+\pagestyle{fancy}
+\fancyhf{}
+\rfoot{\thepage/\pageref{LastPage}}
+\renewcommand{\footrule}{\hrule height 2pt \vspace{2mm}}
+\fancyheadoffset[L]{2.25in}
+\fancyfootoffset[L]{2.25in}
+
+\raggedright
+\setlength{\parindent}{0.5cm}
+\textwidth 5.0in 
+\textheight 8.75in
+
+\usepackage{changepage}
+
+\usepackage{microtype}
+\DisableLigatures[f]{encoding = *, family = * }
+
+\usepackage{color}
+\definecolor{Gray}{gray}{.25}
+
+
+\usepackage{graphicx}
+\usepackage{sidecap}
+\usepackage{wrapfig}
+\usepackage[pscoord]{eso-pic}
+\usepackage[fulladjust]{marginnote}
+\reversemarginpar
+
+\usepackage[natbib=true, style=authoryear, uniquename=false, maxcitenames=2, maxbibnames=99, firstinits=true, doi=false, url=false]{biblatex}
+\bibliography{robustness.bib}
+\renewbibmacro{in:}{}                                  % remove In:
+\DeclareFieldFormat[article, inbook]{title}{#1}        % remove quotes around titles
+\AtEveryBibitem{%                                      % remove language indications
+  \clearlist{language}%
+}
+
+\usepackage{bm}
+\usepackage{amsmath}
+
+\usepackage[english]{babel}
+
+
+\sloppy
+
+\title{Analytical models for piRNA-regulated transposable element dynamics}
+\author{Arnaud Le Rouzic}
+
+\begin{document}
+
+\maketitle
+
+\section{General setting}
+
+The model tracks two variables: (i) the average copy number, and (ii) the frequency of piRNA regulatory sites.
+
+\paragraph{Symbols} \mbox{} \\
+
+\begin{tabular}{cll}
+Symbol & Meaning & Typical value \\ \hline
+$N$ & Population size & $\infty$ \\
+$\bar n$ & Average number of copies per individual & $1 > \bar n > 1000$ \\
+$u_0$ & Maximal transposition rate & $u \leq 1$ \\
+$v$ & Deletion rate & $v < 10^{-4}$ \\
+$\pi$ & Proportion of new insertions in a piRNA region & $\pi \simeq 3\%$ \\
+\end{tabular}
+
+\paragraph {Model assumptions} The model assumes that genetic drif can be neglected. This implies not only that $N \rightarrow \infty$, but also that $\bar n \cdot N \rightarrow \infty$, which excludes the very beginning of a TE invasion after a horizontal transfer. 
+
+The model also assumes linkage equilibrium in a sexual, random mating population. This only holds if transposition and selection are not too strong. It also assumes that the genome is freely recombining; predictions are probably inaccurate when sex chromosomes are large compared to the genome size. 
+
+\paragraph {Historical models} The general setting dates back to Charlesworth \& Charlesworth 1983. 
+
+\begin{equation}
+\bar n_{t+1} = \bar n_t(u_n - v),
+\end{equation}
+
+
+If $u_n$ is constant, the dynamics is exponential, but if $u_0 > v$, $d u_n / d n < 0$, $\overline{u_n} \simeq u_{\bar n}$, and $\mathrm{lim} (u_n) < v$, with $u_{\hat n} = v$, then an equilibrium can be reached at $n = \hat n$. 
+
+If the TEs are deleterious ($w_n < w_0$), then the effect of selection can be accounted for (the approximation being better when the fitness function $w_n$ is smooth). 
+
+\begin{equation}\label{eq:cc2}
+\bar n_{t+1} \simeq \bar n_t(u_n - v) + \bar n \frac{d \log w_n}{d n} \Bigr|_{\bar n}.
+\end{equation}
+
+Equilibrium is reached when $\bar n_{t+1} = \bar n_t = \hat n$, which can be computed when the fitness function $w_n$ is known. 
+
+%~ \begin{figure}[h]
+%~ \begin{center}
+%~ << cc1, echo=FALSE, fig=TRUE, width=10, height=4 >>=
+%~ source("amodel1.R")
+
+%~ layout(t(1:2))
+%~ plot(cc83(u=function(n) 0.4/(1+3*n), v=0.01, dlw=function(n) 0, Tmax=400), xlab="Generations", ylab="Copy number", type="l")
+%~ plot(cc83(u=function(n) 0.1, dlw=function(n) -0.001*n, v=0.01, Tmax=50), xlab="Generations", ylab="Copy number", type="l")
+%~ @
+%~ \end{center}
+%~ \caption{Different equilibria under the Charlesworth \& Charlesworth 1983 model: left, neutral model, the equilibrium is acheved when transposition regulation brings the transposition rate at the level of the deletion rate; right: selection model, the equilibrium is reached when selection is stronger than transposition. }
+%~ \end{figure}
+
+\section{piRNA model}
+
+Let's assume that there is a single piRNA cluster in the genome, which segregates at frequency $p_t$ in the population at generation $t$. When the population is diploid and the regulation is dominant, transposition can occur only in a proportion $(1-p_t)^2$ of the population. Assuming random mating (i.e.\ no correlation between $n$ and the genotype at the regulatory cluster), and no regulation apart from the piRNA clusters (i.e.\ $u$ is constant),
+
+\begin{align}\label{eq:pi1}
+\begin{split}
+\bar n_{t+1} &= \bar n_t( (1-p_t)^2 u - v) \\
+p_{t+1} &= p_t + \pi \bar n_t (1-p_t)^2 u
+\end{split}
+\end{align}
+
+\begin{figure}[h]
+\begin{center}
+	\includegraphics{../figures/figA}
+\caption{Dynamics in the basic piRNA model, $u=0.2, \pi=0.03$. Left: average number of copies, right: frequency of the segregating cluster in the population. }
+\end{center}
+\end{figure}
+
+
+Contrary to the previous examples, the equilibrium $\hat n$  depends on the initial state $(n_0, p_0)$, and no close-form solution can be provided by equating $\bar n_{t+1}$ to $\bar n_t$. However, it can be explored numerically.
+
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics{../figures/figB}
+\caption{Influence of key parameters ($u$, $\pi$, and $n_0$) on the equilibrium state (number of copies at equilibrium and time to reach the equilibrium). }
+\end{center}
+\end{figure}
+
+Time to equilibrium depends a lot on the transposition rate (large transposition rates reach equilibrium in a few generations, low transposition rates may need thousands). However, the number of copies at equilibrium does not depend on the transposition rate (!). The most important factor for the equilibrium number of copies is $\pi$, the relative size of pi-clusters in the genome. If clusters are rare, copies can accumulate fast before regulation kicks in. Finally, the equilibrium copy number is insensitive to $n_0$, but the time to regulation, slightly more. 
+
+A naive piRNA model implementing selection could be derived by combining equations \ref{eq:cc2} and \ref{eq:pi1}:
+
+\begin{align}\label{eq:pi2}
+\begin{split}
+\bar n_{t+1} &= \bar n_t((1-p_t)^2 u - v) + \bar n \frac{d \log w_n}{d n} \Bigr|_{\bar n}\\
+p_{t+1} &= p_t + \pi \bar n_t (1-p_t)^2 u
+\end{split}
+\end{align}
+
+However, assuming random mating and no linkage disequilibrium might be problematic here. In theory, individuals with regulatory clusters should have less TEs, and thus higher fitness. If selection is strong, this should impact the dynamics of the clusters, but accounting for it looks a bit complicated. 
+
+
+\end{document}
