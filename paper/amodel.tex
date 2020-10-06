@@ -49,7 +49,7 @@
 \reversemarginpar
 
 \usepackage[natbib=true, style=authoryear, uniquename=false, maxcitenames=2, maxbibnames=99, firstinits=true, doi=false, url=false]{biblatex}
-\bibliography{robustness.bib}
+\bibliography{amodel.bib}
 \renewbibmacro{in:}{}                                  % remove In:
 \DeclareFieldFormat[article, inbook]{title}{#1}        % remove quotes around titles
 \AtEveryBibitem{%                                      % remove language indications
@@ -62,14 +62,47 @@
 \usepackage[english]{babel}
 
 
-\sloppy
 
-\title{Analytical models for piRNA-regulated transposable element dynamics}
-\author{Arnaud Le Rouzic}
+\title{}
+\date{}
 
 \begin{document}
+\vspace*{0.35in}
 
-\maketitle
+% title goes here:
+\begin{flushleft}
+{\Large
+\textbf\newline{Dynamical Models of piRNA-regulated Transposable Elements}
+}
+\newline
+% authors go here:
+\\
+%~ Arnaud Le~Rouzic\textsuperscript{1,*} \\
+%~ Siddharth S.~Tomar\textsuperscript{1} \\
+%~ Aur\'elie Hua-Van\textsuperscript{1}
+%~ \\
+\bigskip
+\bf{1} Laboratoire Évolution: Génomes, Comportement, Écologie; Université Paris-Saclay, CNRS, IRD.
+\\
+\bigskip
+* arnaud.le-rouzic@egce.cnrs-gif.fr
+
+\end{flushleft}
+
+\section*{Abstract}
+
+\linenumbers
+
+\section{Introduction}
+
+Transposable elements (TEs) are repeated sequences that tend to accumulate in genomes, and often constitute a substantial part of eukaryotic DNA. In general, TE families are the most active upon their arrival in a new genome through a horizontal transfer; their copy number increases up to a maximum, at which point transposition stops. TE sequences are then progressively degraded and fragmented, accumulating sustitutions, insertions, and deletions, up to being undetectable and not identifiable as such. The reasons why the nature of TE families, the total TE content, and the number of copies per family vary substantially in the tree of life, even among close species, are far from being well-understood, which raises interesting challenges in comparative genomics. 
+
+TEs spread in genomes by replicative transposition, which ensures both the genomic increase in copy number and the invasion of populations across generations of sexual reproduction \cite{CC83}. They are often cited as a typical example of selfish DNA sequences, as they can spread without bringing any selective advantage to the host species, and could even be deleterious \cite{OC80, DS80}. Even if an exponential amplification of a TE family could, in theory, lead to species extinction, empirical evidence rather suggests that TE invasion generally stops due to several (non-exclusive) physiological or evolutionary mechanisms, including selection, mutation, and regulation. Selection occurs whenever TE sequences are deleterious for the host species, as individuals carrying less TE copies will be favored by natural selection, and will thus reproduce preferentially, which tends to decrease the number of TE copies at the next generation. The mutation-control scenario relies on the degradation of the protein-coding sequence of TEs, which decreases the amount of functional transposition machinery (and thus the transposition rate) \cite{LCB07} \emph{(+ cite something about RIP?)}. Alternatively, substitutions or internal deletions in TEs could generate non-autonomous elements, able to use the transposition machinery without producing it, decreasing the transposition rate of autonomous copies \cite{LC06, RLZ+16}. Finally, transposition regulation refers to any mechanism involved in the control of the transposition rate of potentially functional TE sequences by the TE itself of by the host. 
+
+\emph{Quick tour of known regulation mechanisms? Transcription silencing by methylation, alternative splicing (P element), OPI, etc.}. It has been recently confirmed that post-transcriptional TE silencing by small RNA was probably the most widespread and efficient TE regulation mechanism. \emph{Perhaps a quick presentation of the piwi pathway, + how widespread it is -- Drosophila, vertegrates, what about plants?}. 
+
+If the strength of regulation increases with the copy number, the transposition rate is expected to drop in the course of the TE invasion up to the point where transposition stops. Nevertheless, the piwi regulation pathway displays unique features that may affect substantially the evolutionary dynamics of TE families: (i) it relies on a mutation-based mechanism, involving regulatory loci that may need several generations to appear (ii) the regulatory loci in the host genome segregate independently from the TE families and have their own evolutionary dynamics (the TE invades a genetically-heterogeneous populations, which are a mixture of permissive and repressive genetic backgrounds), and (iii) the regulation mechanism is irreversible (transposition does not occur again in low-copy number individuals). The consequences of these unique features on the TE invasion dynamics are not totally clear yet. Individual-based stochastic simulations have shown that (...  \cite{Kof19,KAZ18,CL10}). 
+
 
 \section{General setting}
 
@@ -161,6 +194,9 @@ p_{t+1} &= p_t + \pi \bar n_t (1-p_t)^2 u
 \end{align}
 
 However, assuming random mating and no linkage disequilibrium might be problematic here. In theory, individuals with regulatory clusters should have less TEs, and thus higher fitness. If selection is strong, this should impact the dynamics of the clusters, but accounting for it looks a bit complicated. 
+
+
+\printbibliography
 
 
 \end{document}
