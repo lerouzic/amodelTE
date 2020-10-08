@@ -1,4 +1,4 @@
-
+source("../src/sim_functions.R")
 
 cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n) {
 	ans <- c(n0, rep(NA, Tmax))
@@ -8,17 +8,155 @@ cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n
 	ans
 }
 
-mod1.nosel <- function(u, rho, v=0, n0=1, p0=0, Tmax=100) {
-	ans <- rbind(c(n0, rep(NA, Tmax)), c(p0, rep(NA, Tmax)))
-	rownames(ans) <- c("n","p")
+amodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0, Tmax=100) {
+	ans <- list(
+		n=c(n0, rep(NA, Tmax)),
+		p=c(p0, rep(NA, Tmax)))
 	for (t in 1:Tmax) {
-		ans["n",t+1] <- ans["n",t] + ans["n",t]*(u*(1-ans["p",t])^2 - v)
-		ans["p",t+1] <- ans["p",t] + u*rho*ans["n",t]*(1-ans["p",t])^2
+		p <- ans$p[t]
+		n <- ans$n[t]
+		cf <- if (dom) (1-p)^2 else (1-p)
+		ans$n[t+1] <- n + n*(u*cf - s)
+		if (k==1) {
+			ans$p[t+1] <- p + n*u*pi*cf  + if (selk) - s*p*(1-p)/(1-s*p) else 0
+		} else { stop() }
 	}
 	ans
 }
 
-mod1.timetoeq <- function(..., Tmax=10000, thresh=0.99) {
-	aa <- do.call(mod1.nosel, c(list(Tmax=Tmax), list(...)))
-	list(t=which(aa["p",] > thresh)[1], n=aa["n",Tmax])
+pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0) {
+	if (p0 != 0) warning("Most models assume that p0=0. Predictions will be unreliable.")
+	
+	if (k==1) {
+		if (s==0) {
+			if (!dom) {
+				return(list(Eq=list(
+								n=n0+1/pi,
+								p=1)))				
+			} else {
+				return(list(Eq=list(
+								n=n0+1/pi,
+								p=1)))
+			}
+		} else { #s != 0
+			if (!dom) {
+				if (!selk) {
+					return(list(Max=list(
+										n=n0+(1/pi)*(1+(s/u)*log(s/u)),
+										p=1-s/u),
+								Eq=list(
+										n=0,
+										p=1-exp(-u*pi*(n0+1/pi)/s))))
+				} else { # selk
+					return(list(Eq=list(
+										n=(1/(u*pi))*(1/(s*(1-s/u)-1)),
+										p=1/(s*s*(1-s/u)))))
+				}
+			} else { # dom
+				if (!selk) {
+					return(list(Max=list(
+										n=n0+(1/pi)*(1+(s/u)*(1-sqrt(u/s))),
+										p=1-sqrt(s/u)),
+								Eq=list(
+										n=0,
+										p=1-1/(1-u*(n0*pi+1)/s))))
+				} else { #selk
+					return(list(Eq=list(
+										n=(1/(u*pi))*(1/(s*(1-sqrt(s/u))-1)),
+										p=(1-sqrt(1-4*s))/(2*s))))
+				}
+			}
+		}
+		
+	} else {
+		stop()
+	}
+}
+
+simmodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0, N=10000, Tmax=100, rep=1, cache.dir="../cache/") {
+	# dom is not really properly managed (only works for k=1)
+	simpar <- list(
+		nb.loci           = 1000,
+		neutral.loci      = if (selk) numeric(0) else 1:k, 
+		piRNA.loci        = 1:k,
+		piRNA.prob        = pi,
+		fitness.FUN       = function(n.sel)    exp(-n.sel*s),
+		regulation.FUN    = function(n.piRNA)  if (n.piRNA == 0) 1 else 0,
+		u                 = u,
+		G                 = Tmax,
+		N                 = N,
+		rep               = rep,
+		summary.every     = 1,
+		init.TE.ind       = n0
+	)
+	if (!dom) simpar$regulation.FUN <- function(n.piRNA) if (n.piRNA == 0) 1 else if (n.piRNA == 1) 0.5 else 0
+	
+	use.cache <- require(digest) && !is.null(cache.dir)
+		
+	file.name <- if (use.cache) file.path(cache.dir, paste0(digest(capture.output(dput(simpar))), ".rds")) else NULL
+	
+	if (use.cache && file.exists(file.name)) {
+		simres <- readRDS(file.name)
+	} else {
+		simres <- run.simul(simpar)
+		if (use.cache)
+			saveRDS(simres, file.name)
+	}
+	ans <- list(
+		n=rowMeans(sapply(simres, function(i) i$n.tot.mean)),
+		p=rowMeans(sapply(simres, function(i) i$n.piRNA.mean))/2)
+	names(ans$n) <- names(ans$p) <- rownames(simres[[1]])
+	ans
+}
+
+plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FALSE, legend=TRUE, Tmax=100, N=10000, rep=1, nb.simpt=21, use.cache=TRUE,
+	xlab="Generations", ylab=if(what=="n") "Copy number" else "Cluster frequency", xlim=c(0,Tmax), ylim=NA,
+	legend.pos="topleft") {
+
+	dyn.res <- lapply(model.par, function(mm) { 
+		pp <- model.default
+		pp[names(mm)] <- mm
+		do.call(amodel, c(as.list(pp), list(Tmax=Tmax)))
+	})
+	
+	if (pred){
+		pred.res <- lapply(model.par, function(mm) {
+			pp <- model.default
+			pp[names(mm)] <- mm				
+			do.call(pred.eq, as.list(pp))
+		})
+	}
+	
+	if (sim) {
+		sim.res <- lapply(model.par, function(mm) {
+			pp <- model.default
+			pp[names(mm)] <- mm				
+			do.call(simmodel, c(as.list(pp), list(N=N, Tmax=Tmax, rep=rep, cache.dir=if(use.cache) "../cache" else NULL )))
+		})
+	}
+	
+	if (is.na(ylim)) ylim <- c(0, 1.2*max(unlist(sapply(dyn.res, "[[", what)), unlist(sapply(pred.res, "[[", what)), unlist(sapply(sim.res, "[[", what))))
+
+	plot(NULL, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim)
+
+	for (ip in seq_along(model.par)) {
+		lines(0:Tmax, dyn.res[[ip]][[what]], col=col[ip])
+		
+		if (pred) {
+			if ("Max" %in% names(pred.res[[ip]]))
+				abline(h=pred.res[[ip]]$Max[[what]], lty=lty.max, col=col[ip])
+			if ("Eq" %in% names(pred.res[[ip]]))
+				abline(h=pred.res[[ip]]$Eq[[what]], lty=lty.eq, col=col[ip])	
+		}
+		if (sim) {
+			xx <- as.numeric(names(sim.res[[ip]][[what]]))
+			xpl <- unique(seq(1, length(xx), length.out=nb.simpt))
+			points(xx[xpl], sim.res[[ip]][[what]][xpl], pch=1, col=col[ip])
+		}
+	}
+	
+	if (legend) {
+		legend.labels <- sapply(seq_along(model.par), function(ip) {paste0(names(model.par[[ip]]), "=", model.par[[ip]], collapse=", ")})
+		legend(legend.pos, lty=1, col=col[seq_along(model.par)], legend=legend.labels, bty="n")
+	}
 }

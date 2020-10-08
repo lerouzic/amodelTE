@@ -3,14 +3,16 @@ library(parallel)
 
 global.default <- list(
 	mc.cores          = detectCores() - 1,
-	mc.cores.internal = NA,
+	mc.cores.internal = 1,
 	nb.loci           = 1000,
 	neutral.loci      = numeric(0), 
 	piRNA.loci        = 1:30,
+	piRNA.prob        = 30/1000,
 	fitness.FUN       = function(n.sel)    exp(-n.sel*0.01),
 	regulation.FUN    = function(n.piRNA)  if (n.piRNA == 0) 1 else 0,
 	u                 = 0.1,
 	G                 = 100,
+	summary.every     = 10,
 	N                 = 1000,
 	rep               = 10,
 	init.TE.ind       = 1
@@ -27,37 +29,37 @@ mcsapply <- function (X, FUN, ..., simplify = TRUE, USE.NAMES = TRUE, mc.cores=1
     else answer
 }
 
-n.sel.ind <- function(ind, global) {
-	if (is.null(ind$n.sel))
+n.sel.ind <- function(ind, global, force.update=FALSE) {
+	if (is.null(ind$n.sel) || force.update)
 		sum(! c(which(ind$gam1), which(ind$gam2)) %in% global$neutral.loci)
 	else
 		ind$n.sel
 }
 
 n.sel.pop <- function(pop, global) {
-	mcsapply(pop, n.sel.ind, global=global, mc.cores=global$mc.cores.internal)
+	sapply(pop, n.sel.ind, global=global)
 }
 
-n.tot.ind <- function(ind, global) {
-	if (is.null(ind$n.tot))
+n.tot.ind <- function(ind, global, force.update=FALSE) {
+	if (is.null(ind$n.tot) || force.update)
 		sum(c(ind$gam1, ind$gam2))
 	else
 		ind$n.tot
 }
 
 n.tot.pop <- function(pop, global) {
-	mcsapply(pop, n.tot.ind, global=global, mc.cores=global$mc.cores.internal)
+	sapply(pop, n.tot.ind, global=global)
 }
 
-n.piRNA.ind <- function(ind, global) {
-	if (is.null(ind$n.piRNA))
+n.piRNA.ind <- function(ind, global, force.update=FALSE) {
+	if (is.null(ind$n.piRNA) || force.update)
 		sum(c(which(ind$gam1), which(ind$gam2)) %in% global$piRNA.loci)
 	else
 		ind$n.piRNA
 }
 
 n.piRNA.pop <- function(pop, global) {
-	mcsapply(pop, n.piRNA.ind, global=global, mc.cores=global$mc.cores.internal)
+	sapply(pop, n.piRNA.ind, global=global)
 }
 
 
@@ -69,9 +71,9 @@ make.gamete <- function(ind) {
 	ans
 }
 
-fitness.ind <- function(ind, global) {
-	if (is.null(ind$fitness)) {
-		n.sel <- n.sel.ind(ind, global)
+fitness.ind <- function(ind, global, force.update=FALSE) {
+	if (is.null(ind$fitness) || force.update) {
+		n.sel <- n.sel.ind(ind, global, force.update)
 		global$fitness.FUN(n.sel)
 	} else 
 		ind$fitness
@@ -86,10 +88,10 @@ reproduction.ind <- function(par1, par2, global) {
 		gam1=make.gamete(par1), 
 		gam2=make.gamete(par2))
 	class(ind) <- "ind"
-	ind$n.tot   <- n.tot.ind(ind, global)
-	ind$n.sel   <- n.sel.ind(ind, global)
-	ind$n.piRNA <- n.piRNA.ind(ind, global)
-	ind$fitness <- fitness.ind(ind, global)
+	ind$n.tot   <- n.tot.ind(ind, global, force.update=TRUE)
+	ind$n.sel   <- n.sel.ind(ind, global, force.update=TRUE)
+	ind$n.piRNA <- n.piRNA.ind(ind, global, force.update=TRUE)
+	ind$fitness <- fitness.ind(ind, global, force.update=TRUE)
 	ind
 }
 
@@ -108,17 +110,27 @@ transposition.ind <- function(ind, global) {
 	n.piRNA <- n.piRNA.ind(ind, global)
 	n.tot <- n.tot.ind(ind, global)
 	transp.rate <- global$u * global$regulation.FUN(n.piRNA)
-	new.insertions <- rpois(1, n.tot*transp.rate)
-	if (new.insertions > 0)
-		for (nn in 1:new.insertions)
-			if (runif(1) < 0.5)
-				ind$gam1[sample(seq_along(ind$gam1), 1)] <- TRUE
-			else 
-				ind$gam1[sample(seq_along(ind$gam1), 1)] <- TRUE
+	
+	piloc <- global$piRNA.loci
+	lpiloc <- length(piloc)
+	nopiloc <- global$notpiRNA.loci
+	lnopiloc <- length(nopiloc)
+	
+	new.insertions.clust <- rpois(2, global$piRNA.prob*n.tot*transp.rate)
+	new.insertions.clust[new.insertions.clust > lpiloc] <- lpiloc
+	new.insertions       <- rpois(2, (1-global$piRNA.prob)*n.tot*transp.rate/2)
+	new.insertions[new.insertions > lnopiloc] <- lnopiloc
+	
+	if (lpiloc == 1) piloc <- c(piloc, piloc) # workaround for the sample bug interface
+	ind$gam1[sample(piloc, new.insertions.clust[1])] <- TRUE
+	ind$gam2[sample(piloc, new.insertions.clust[2])] <- TRUE
 
-	ind$n.tot   <- n.tot.ind(ind, global)
-	ind$n.piRNA <- n.piRNA.ind(ind, global)
-	ind$n.sel   <- n.sel.ind(ind, global)
+	ind$gam1[sample(nopiloc, new.insertions[1])] <- TRUE
+	ind$gam2[sample(nopiloc, new.insertions[2])] <- TRUE
+
+	ind$n.tot   <- n.tot.ind(ind, global, force.update=TRUE)
+	ind$n.piRNA <- n.piRNA.ind(ind, global, force.update=TRUE)
+	ind$n.sel   <- n.sel.ind(ind, global, force.update=TRUE)
 	ind
 }
 
@@ -133,10 +145,10 @@ init.ind <- function(global) {
 	ind$gam1 <- ind$gam2 <- rep(FALSE, global$nb.loci)
 	ind$gam1[sample(seq_along(ind$gam1), min(global$nb.loci, rpois(1, global$init.TE.ind/2)), replace=FALSE)] <- TRUE
 	ind$gam2[sample(seq_along(ind$gam2), min(global$nb.loci, rpois(1, global$init.TE.ind/2)), replace=FALSE)] <- TRUE
-	ind$n.tot <- n.tot.ind(ind, global)
-	ind$n.sel <- n.sel.ind(ind, global)
-	ind$n.piRNA <- n.piRNA.ind(ind, global)
-	ind$fitness <- fitness.ind(ind, global)
+	ind$n.tot <- n.tot.ind(ind, global, force.update=TRUE)
+	ind$n.sel <- n.sel.ind(ind, global, force.update=TRUE)
+	ind$n.piRNA <- n.piRNA.ind(ind, global, force.update=TRUE)
+	ind$fitness <- fitness.ind(ind, global, force.update=TRUE)
 	ind
 }
 
@@ -164,14 +176,15 @@ summary.pop <- function(pop, global) {
 
 run.one.simul <- function(global) {
 	pop <- init.pop(global)
-	ans <- data.frame(summary.pop(pop, global))
+	ans <- list('0'=data.frame(summary.pop(pop, global)))
 	for (gg in 1:global$G) {
 		pop <- reproduction.pop(pop, global)
 		pop <- transposition.pop(pop, global)
-		ans <- rbind(ans, summary.pop(pop, global))
+		if (gg == global$G || gg %% global$summary.every == 0) {
+			ans[[as.character(gg)]] <- summary.pop(pop, global)
+		}
 	}
-	rownames(ans) <- as.character(0:global$G)
-	ans
+	do.call(rbind, ans)
 }
 
 run.simul <- function(user.global=list()) {
@@ -183,5 +196,6 @@ run.simul <- function(user.global=list()) {
 	global[valid.user.global] <- user.global[valid.user.global]
 	if (is.na(global$mc.cores.internal))
 		global$mc.cores.internal <- max(1, global$mc.cores %/% global$rep)
+	global$notpiRNA.loci <- (1:global$nb.loci)[! 1:global$nb.loci %in% global$piRNA.loci]
 	mclapply(1:global$rep, function(i) run.one.simul(global=global), mc.cores=global$mc.cores)
 }
