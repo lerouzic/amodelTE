@@ -13,7 +13,7 @@ lty.eq <- 2
 
 col <- 1:10
 
-N.sim <- 500
+N.sim <- 10000
 rep.sim <- 6
 Tmax <- 150
 
