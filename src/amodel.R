@@ -27,49 +27,23 @@ amodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0, T
 pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0) {
 	if (p0 != 0) warning("Most models assume that p0=0. Predictions will be unreliable.")
 	
-	if (k==1) {
-		if (s==0) {
-			if (!dom) {
+	if (s==0) {
+		return(list(Eq=list(
+						n=n0+k/pi,
+						p=1)))
+	} else { #s != 0
+		if (!selk) {
+			return(list(Max=list(
+							n=n0+(1-sqrt(s/u))/pi + s/(pi*u)*(1-sqrt(u/s)),
+							p=1-sqrt(s/u)),
+						Eq=list(
+							n=0,
+							p=1-1/(u*(1+n0*pi)/s-1))))
+			} else { #selk
 				return(list(Eq=list(
-								n=n0+1/pi,
-								p=1)))
-			} else {
-				return(list(Eq=list(
-								n=n0+1/pi,
-								p=1)))
+									n=(1/(u*pi))*(1/(s*(1-sqrt(s/u))-1)),
+									p=(1-sqrt(1-4*s))/(2*s))))
 			}
-		} else { #s != 0
-			if (!dom) {
-				if (!selk) {
-					return(list(Max=list(
-										n=n0+(1/pi)*(1+(s/u)*log(s/u)),
-										p=1-s/u),
-								Eq=list(
-										n=0,
-										p=1-exp(-u*pi*(n0+1/pi)/s))))
-				} else { # selk
-					return(list(Eq=list(
-										n=(1/(u*pi))*(1/(s*(1-s/u)-1)),
-										p=1/(s*s*(1-s/u)))))
-				}
-			} else { # dom
-				if (!selk) {
-					return(list(Max=list(
-										n=n0+(1/pi)*(1+(s/u)*(1-sqrt(u/s))),
-										p=1-sqrt(s/u)),
-								Eq=list(
-										n=0,
-										p=1-1/(1-u*(n0*pi+1)/s))))
-				} else { #selk
-					return(list(Eq=list(
-										n=(1/(u*pi))*(1/(s*(1-sqrt(s/u))-1)),
-										p=(1-sqrt(1-4*s))/(2*s))))
-				}
-			}
-		}
-		
-	} else {
-		stop()
 	}
 }
 
@@ -80,8 +54,6 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0,
 		neutral.loci      = if (selk) numeric(0) else 1:k, 
 		piRNA.loci        = 1:k,
 		piRNA.prob        = pi,
-		fitness.FUN       = function(n.sel)    exp(-n.sel*s),
-		regulation.FUN    = function(n.piRNA)  if (n.piRNA == 0) 1 else 0,
 		u                 = u,
 		G                 = Tmax,
 		N                 = N,
@@ -90,6 +62,9 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0,
 		init.TE.ind       = n0
 	)
 	if (!dom) simpar$regulation.FUN <- function(n.piRNA) if (n.piRNA == 0) 1 else if (n.piRNA == 1) 0.5 else 0
+	# This tries to go around R lazy evaluation of closures ... what a mess
+	ffs <- paste0('function(n.sel) exp(-' ,eval(s), '*n.sel)')
+	simpar$fitness.FUN <-  eval(parse(text=ffs))
 	
 	if (use.cache && is.null(cache.dir)) {
 		warning("Impossible to use the cache (no cache directory provided).")
@@ -145,7 +120,7 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 		sim.res <- lapply(model.par, function(mm) {
 			pp <- model.default
 			pp[names(mm)] <- mm				
-			do.call(simmodel, c(as.list(pp), list(N=N, Tmax=Tmax, rep=rep, cache.dir=if(use.cache) "../cache" else NULL )))
+			do.call(simmodel, c(as.list(pp), list(N=N, Tmax=Tmax, rep=rep, use.cache=use.cache )))
 		})
 	}
 	
@@ -155,7 +130,6 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 
 	for (ip in seq_along(model.par)) {
 		lines(0:Tmax, dyn.res[[ip]][[what]], col=col[ip])
-		
 		if (pred) {
 			if ("Max" %in% names(pred.res[[ip]]))
 				abline(h=pred.res[[ip]]$Max[[what]], lty=lty.max, col=col[ip])
