@@ -40,6 +40,8 @@
 \usepackage{color}
 \definecolor{Gray}{gray}{.25}
 
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 
 \usepackage{graphicx}
 \usepackage{sidecap}
@@ -236,18 +238,34 @@ The model obtained by combining equations~\ref{eq:seln} and~\ref{eq:selpn} only 
 \begin{table}
 \begin{adjustwidth}{-2in}{0in}
 \begin{flushright}
-\begin{tabular}{lp{4cm}p{4cm}p{4cm}}
- & Neutral & Deleterious TEs & Deleterious TEs and clusters \\ \hline
-1 codominant cluster 		& \begin{equation*}\begin{cases} \hat n = n_0 + 1/\pi \\ \hat p = 1 \end{cases}\end{equation*} 
-							& \begin{equation*}\begin{cases} n^\ast = n_0 + \frac{1}{\pi}(1+ \frac{s}{u}\log \frac{s}{u}) \\ p^\ast = 1 - s/u \end{cases}\end{equation*}
-							\begin{equation*}\begin{cases} \hat n = 0 \\ \hat p = 1 - \exp[-\frac{u\pi}{s}(n_0+\frac{1}{\pi})] \end{cases}\end{equation*} 
-							& \begin{equation*}\begin{cases} \hat n =\frac{1}{u \pi} \frac{1}{s(1-s/u)-1} \\ \hat p = \frac{1}{s^2(1-s/u)} \end{cases}\end{equation*}  \\
-1 dominant cluster 			& \begin{equation*}\begin{cases} \hat n = n_0 + 1/\pi \\ \hat p = 1 \end{cases}\end{equation*} 
-							& \begin{equation*}\begin{cases} n^\ast = n_0 + \frac{1}{\pi}[1+ \frac{s}{u}(1-\sqrt{\frac{u}{s}})] \\ p^\ast = 1 - \sqrt{\frac{s}{u}} \end{cases}\end{equation*}
-							\begin{equation*}\begin{cases} \hat n = 0 \\ \hat p = 1-\frac{1}{1-u(n_0 \pi + 1)/s} \end{cases}\end{equation*} 
-							& \begin{equation*}\begin{cases} \hat n =\frac{1}{u \pi} \frac{1}{s(1-\sqrt{s/u})-1} \\ \hat p \simeq \frac{1 - \sqrt{1-4s}}{2s} \end{cases}\end{equation*} \\
-$n$ dominant clusters & & & \\
-$\infty$ dominant clusters & & & \\
+\begin{tabular}{p{3cm}p{6cm}p{7cm}}
+ & 1 cluster & $k$ clusters \\
+Neutral						& $\begin{cases} 
+								\hat n = n_0 + 1/\pi \\ 
+								\hat p = 1 
+							\end{cases}$
+							& $\begin{cases} 
+								\hat n = n_0 + k/\pi \\ 
+								\hat p = 1 
+							\end{cases}$  \\
+Deleterious TEs 			& $\begin{cases} 
+								n^\ast = n_0 + \frac{1}{\pi}[1-\sqrt{\frac{s}{u}}+ \frac{s}{u}(1-\sqrt{\frac{u}{s}})] \\
+								p^\ast = 1 - \sqrt{\frac{s}{u}} 
+							\end{cases}$ 
+							$\begin{cases}
+								\hat n = 0 \\ 
+								\hat p \simeq 1-(\frac{u}{s}(1+n_0\pi)-1)^{-1} 
+							\end{cases}$
+							& $\begin{cases} 
+								n^\ast = n_0 + \frac{k}{\pi}[1 - (\frac{s}{u})^\frac{1}{2k} + \frac{s}{u(2k-1)} ((\frac{u}{s})^{1-\frac{1}{2k}} -1)] \\ 
+								p^\ast = 1 - (s/u)^\frac{1}{2k}
+							\end{cases}$ 
+							$\begin{cases} 
+								\hat n = 0 \\ 
+								\hat p \simeq 1-[\frac{u}{s}(2k-1)(1+\frac{n_0 \pi}{k})-1]^\frac{1}{1-2k}
+							\end{cases}$\\
+Deleterious TEs \& clusters	& 
+							& \\
 \end{tabular}
 \end{flushright}\end{adjustwidth}
 \end{table}
