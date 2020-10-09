@@ -32,7 +32,7 @@ pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0) 
 			if (!dom) {
 				return(list(Eq=list(
 								n=n0+1/pi,
-								p=1)))				
+								p=1)))
 			} else {
 				return(list(Eq=list(
 								n=n0+1/pi,
@@ -73,7 +73,7 @@ pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0) 
 	}
 }
 
-simmodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0, N=10000, Tmax=100, rep=1, cache.dir="../cache/") {
+simmodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/") {
 	# dom is not really properly managed (only works for k=1)
 	simpar <- list(
 		nb.loci           = 1000,
@@ -91,16 +91,30 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0,
 	)
 	if (!dom) simpar$regulation.FUN <- function(n.piRNA) if (n.piRNA == 0) 1 else if (n.piRNA == 1) 0.5 else 0
 	
-	use.cache <- require(digest) && !is.null(cache.dir)
-		
-	file.name <- if (use.cache) file.path(cache.dir, paste0(digest(capture.output(dput(simpar))), ".rds")) else NULL
+	if (use.cache && is.null(cache.dir)) {
+		warning("Impossible to use the cache (no cache directory provided).")
+		use.cache <- FALSE
+	}
+	if (use.cache && !require(digest, quietly=TRUE)) {
+		warning("Impossible to use the cache (library digest not available).")
+		use.cache <- FALSE
+	}
+	if (use.cache && !dir.exists(cache.dir)) {
+		# This would deserve a better path management
+		dir.create(cache.dir) 
+	}
+	file.name <- if (use.cache) 
+					file.path(cache.dir, paste0(digest(capture.output(dput(simpar))), ".rds")) 
+				else 
+					NULL
 	
 	if (use.cache && file.exists(file.name)) {
 		simres <- readRDS(file.name)
 	} else {
 		simres <- run.simul(simpar)
-		if (use.cache)
-			saveRDS(simres, file.name)
+	}
+	if (use.cache) {
+		saveRDS(simres, file.name)
 	}
 	ans <- list(
 		n=rowMeans(sapply(simres, function(i) i$n.tot.mean)),
