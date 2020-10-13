@@ -8,24 +8,22 @@ cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n
 	ans
 }
 
-amodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0, Tmax=100) {
+amodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, n0=1, p0=0, Tmax=100) {
 	ans <- list(
 		n=c(n0, rep(NA, Tmax)),
 		p=c(p0, rep(NA, Tmax)))
 	for (t in 1:Tmax) {
 		p <- ans$p[t]
 		n <- ans$n[t]
-		cf <- if (dom) (1-p)^2 else (1-p)
+		cf <- (1-p)^(2*k)
 		ans$n[t+1] <- n + n*(u*cf - s)
-		if (k==1) {
-			ans$p[t+1] <- p + n*u*pi*cf  + if (selk) - s*p*(1-p)/(1-s*p) else 0
-		} else { stop() }
+		ans$p[t+1] <- p + n*u*pi*cf/k  + if (selk) - s*p*(1-p)/(1-s*p) else 0
 	}
 	ans
 }
 
-pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0) {
-	if (p0 != 0) warning("Most models assume that p0=0. Predictions will be unreliable.")
+pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, n0=1, p0=0) {
+	if (p0 != 0) warning("Most models assume that p0=0.")
 	
 	if (s==0) {
 		return(list(Eq=list(
@@ -34,21 +32,20 @@ pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0) 
 	} else { #s != 0
 		if (!selk) {
 			return(list(Max=list(
-							n=n0+(1-sqrt(s/u))/pi + s/(pi*u)*(1-sqrt(u/s)),
-							p=1-sqrt(s/u)),
+							n= n0 + (k/pi)*(1-(s/u)^(1/2/k) + s/u/(2*k-1)*(1-(s/u)^(1/2/k-1))),
+							p=1-(s/u)^(1/(2*k))),
 						Eq=list(
 							n=0,
 							p=1-1/(u*(1+n0*pi)/s-1))))
 			} else { #selk
 				return(list(Eq=list(
-									n=(1/(u*pi))*(1/(s*(1-sqrt(s/u))-1)),
-									p=(1-sqrt(1-4*s))/(2*s))))
+									n=k*s/(pi*u)*(1-(s/u)^(1/2/k))/((s/u)^((2*k-1)/(2*k))*(1-s*(s/u)^(1/2/k))),
+									p=(1-(s/u)^(1/2/k)))))
 			}
 	}
 }
 
-simmodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/") {
-	# dom is not really properly managed (only works for k=1)
+simmodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, n0=1, p0=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/") {
 	simpar <- list(
 		nb.loci           = 1000,
 		neutral.loci      = if (selk) numeric(0) else 1:k, 
@@ -61,7 +58,7 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0,
 		summary.every     = 1,
 		init.TE.ind       = n0
 	)
-	if (!dom) simpar$regulation.FUN <- function(n.piRNA) if (n.piRNA == 0) 1 else if (n.piRNA == 1) 0.5 else 0
+	simpar$regulation.FUN <- function(n.piRNA) if (n.piRNA == 0) 1 else 0
 	# This tries to go around R lazy evaluation of closures ... what a mess
 	ffs <- paste0('function(n.sel) exp(-' ,eval(s), '*n.sel)')
 	simpar$fitness.FUN <-  eval(parse(text=ffs))
@@ -93,7 +90,7 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, selk=FALSE, dom=TRUE, n0=1, p0=0,
 	}
 	ans <- list(
 		n=rowMeans(sapply(simres, function(i) i$n.tot.mean)),
-		p=rowMeans(sapply(simres, function(i) i$n.piRNA.mean))/2)
+		p=rowMeans(sapply(simres, function(i) i$n.piRNA.mean))/2/k)
 	names(ans$n) <- names(ans$p) <- rownames(simres[[1]])
 	ans
 }
