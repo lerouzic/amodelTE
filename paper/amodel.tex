@@ -245,8 +245,8 @@ Neutral						& $\begin{cases}
 								\hat p = 1 
 							\end{cases}$  \\
 Deleterious TEs 			& $\begin{cases} 
-								n^\ast = n_0 + \frac{1}{\pi}[1-\sqrt{\frac{s}{u}}+ \frac{s}{u}(1-\sqrt{\frac{u}{s}})] \\
-								p^\ast = 1 - \sqrt{\frac{s}{u}} 
+								n^\ast = n_0 + \frac{1}{\pi}(1-\sqrt{s/u})^2 \\
+								p^\ast = 1 - \sqrt{s/u} 
 							\end{cases}$ 
 							$\begin{cases}
 								\hat n = 0 \\ 
@@ -261,11 +261,11 @@ Deleterious TEs 			& $\begin{cases}
 								\hat p \simeq 1-[\frac{u}{s}(2k-1)(1+\frac{n_0 \pi}{k})-1]^\frac{1}{1-2k}
 							\end{cases}$\\
 Deleterious TEs \& clusters	& $ \begin{cases} 
-								\hat n = \frac{s}{\pi u} \frac{1-\sqrt{s/u}}{\sqrt{s/u}-s^2/u)} \\
+								\hat n = \frac{1}{\pi} \sqrt\frac{s}{u} \frac{\sqrt{s/u}-1}{s\sqrt{s/u}-1} \\
 								\hat p = 1 - \sqrt{s/u}
 							\end{cases}$ &
 							$\begin{cases}
-								\hat n = \frac{ks}{\pi u} \frac{1-(s/u)^\frac{1}{2k}}{(s/u)^\frac{2k-1}{2k} [1-s(s/u)^\frac{1}{2k}]} \\
+								\hat n = \frac{k}{\pi} \frac{(s/u)^\frac{1}{k} - (s/u)^\frac{1}{2k}}{s (s/u)^\frac{1}{2k}-1} \\
 								\hat p = 1-(s/u)^\frac{1}{2k}
 							\end{cases}$
 \end{tabular}
