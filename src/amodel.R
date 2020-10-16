@@ -22,6 +22,27 @@ amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100) {
 	ans
 }
 
+amodel.LD <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100) {
+	if(k !=1 || s!=0 || sp!=0) return(NA) # Only the neutral model with 1 cluster
+	ans <- list(
+		np=c(n0, rep(NA, Tmax)), # Permissive background
+		nr=c(n0, rep(NA, Tmax)), # Regulated background
+		n=c(n0, rep(NA, Tmax)),
+		p=c(p0, rep(NA, Tmax)))
+	for (t in 1:Tmax) {
+		p <- ans$p[t]
+		np <- ans$np[t]
+		nr <- ans$nr[t]
+		
+		ans$np[t+1] <- nr*(p*(1-p)^2) + np*(1+u)*(1-p)^3
+		ans$nr[t+1] <- nr*p*(2-2*p+2*p^2-p^3) + np*(1+u)*2*p*(1-p)^3
+		
+		ans$p[t+1] <- p + np*u*pi*(1-p)^2
+		ans$n[t+1] <- ans$np[t+1]*(1-ans$p[t+1])^2 + ans$nr[t+1]*ans$p[t+1]*(2-ans$p[t+1])
+	}
+	ans
+}
+
 pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0) {
 	if (p0 != 0) warning("Most models assume that p0=0.")
 	
@@ -108,6 +129,12 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 		do.call(amodel, c(as.list(pp), list(Tmax=Tmax)))
 	})
 	
+	dyn.res.LD <- lapply(model.par, function(mm) { 
+		pp <- model.default
+		pp[names(mm)] <- mm
+		do.call(amodel.LD, c(as.list(pp), list(Tmax=Tmax)))
+	})
+	
 	if (pred){
 		pred.res <- lapply(model.par, function(mm) {
 			pp <- model.default
@@ -130,6 +157,8 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 
 	for (ip in seq_along(model.par)) {
 		lines(0:Tmax, dyn.res[[ip]][[what]], col=col[ip])
+		if (length(dyn.res.LD[[ip]])>1)
+			lines(0:Tmax, dyn.res.LD[[ip]][[what]], col=col[ip], lty=3)
 		if (pred) {
 			if ("Max" %in% names(pred.res[[ip]]))
 				abline(h=pred.res[[ip]]$Max[[what]], lty=lty.max, col=col[ip])
