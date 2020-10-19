@@ -20,7 +20,7 @@ Tmax <- 150
 use.cache=TRUE
 
 layout(rbind(1:2, 3:4))
-model.default <- c(u=0.1, pi=0.03, s=0, k=1, sp=0, dom=TRUE, n0=1, p0=0)
+model.default <- c(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0)
 
 
 ###### Effect of transposition rate
