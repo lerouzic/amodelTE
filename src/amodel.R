@@ -30,12 +30,12 @@ amodel.LD <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100) {
 		n=c(n0, rep(NA, Tmax)),
 		p=c(p0, rep(NA, Tmax)))
 	for (t in 1:Tmax) {
-		p <- ans$p[t]
-		np <- ans$np[t]
+		p <- ans$p[t] + 1e-6
+		np <- (1+u)*ans$np[t]
 		nr <- ans$nr[t]
 		
-		ans$np[t+1] <- nr*(p*(1-p)^2) + np*(1+u)*(1-p)^3
-		ans$nr[t+1] <- nr*p*(2-2*p+2*p^2-p^3) + np*(1+u)*2*p*(1-p)^3
+		ans$np[t+1] <- (nr*p*(1-p)^2 + np*(1-p)^3)/(1-p)^2
+		ans$nr[t+1] <- (nr*p*(1+p-p^2) + np*p*(1-p)^2)/p/(2-p)
 		
 		ans$p[t+1] <- p + np*u*pi*(1-p)^2
 		ans$n[t+1] <- ans$np[t+1]*(1-ans$p[t+1])^2 + ans$nr[t+1]*ans$p[t+1]*(2-ans$p[t+1])
