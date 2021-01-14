@@ -79,8 +79,8 @@ fitness.ind <- function(ind, global, force.update=FALSE) {
 		ind$fitness
 }
 
-fitness.pop <- function(pop, global) {
-	sapply(pop, fitness.ind, global=global)
+fitness.pop <- function(pop, global, force.update=FALSE) {
+	sapply(pop, fitness.ind, global=global, force.update=force.update)
 }
 
 reproduction.ind <- function(par1, par2, global) {
@@ -96,7 +96,7 @@ reproduction.ind <- function(par1, par2, global) {
 }
 
 reproduction.pop <- function(pop, global) {
-	fitnesses <- fitness.pop(pop)
+	fitnesses <- fitness.pop(pop, global, force.update=FALSE)
 	N <- length(pop)
 	parent1 <- sample(1:N, N, replace=TRUE, prob=fitnesses)
 	parent2 <- sample(1:N, N, replace=TRUE, prob=fitnesses)
@@ -178,8 +178,8 @@ run.one.simul <- function(global) {
 	pop <- init.pop(global)
 	ans <- list('0'=data.frame(summary.pop(pop, global)))
 	for (gg in 1:global$G) {
-		pop <- reproduction.pop(pop, global)
 		pop <- transposition.pop(pop, global)
+		pop <- reproduction.pop(pop, global)
 		if (gg == global$G || gg %% global$summary.every == 0) {
 			ans[[as.character(gg)]] <- summary.pop(pop, global)
 		}
