@@ -178,8 +178,8 @@ run.one.simul <- function(global) {
 	pop <- init.pop(global)
 	ans <- list('0'=data.frame(summary.pop(pop, global)))
 	for (gg in 1:global$G) {
-		pop <- transposition.pop(pop, global)
 		pop <- reproduction.pop(pop, global)
+		pop <- transposition.pop(pop, global)
 		if (gg == global$G || gg %% global$summary.every == 0) {
 			ans[[as.character(gg)]] <- summary.pop(pop, global)
 		}
