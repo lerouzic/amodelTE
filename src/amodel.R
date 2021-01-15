@@ -8,7 +8,9 @@ cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n
 	ans
 }
 
-amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100) {
+amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100, corr=TRUE) {
+	if (corr) 
+		s <- s*(1+4*u)
 	ans <- list(
 		n=c(n0, rep(NA, Tmax)),
 		p=c(p0, rep(NA, Tmax)))
@@ -22,7 +24,9 @@ amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100) {
 	ans
 }
 
-amodel.LD <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100) {
+amodel.LD <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100, corr=TRUE) {
+	if (corr)
+		s <- s*(1+4*u)
 	if(k !=1 || s!=0 || sp!=0) return(NA) # Only the neutral model with 1 cluster
 	ans <- list(
 		np=c(n0, rep(NA, Tmax)), # Permissive background
@@ -43,7 +47,9 @@ amodel.LD <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100) {
 	ans
 }
 
-pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0) {
+pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, corr=TRUE) {
+	if (corr)
+		s <- s*(1+4*u)
 	if (p0 != 0) warning("Most models assume that p0=0.")
 	
 	if (s==0) {
