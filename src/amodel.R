@@ -8,6 +8,7 @@ cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n
 	ans
 }
 
+<<<<<<< HEAD
 model <- function(t, y, parms) {
 	with(as.list(c(y, parms)), {
 		dn <- n*u*(1-p)^(2*k) - n*s*(1+2*u)
