@@ -62,7 +62,6 @@ n.piRNA.pop <- function(pop, global) {
 	sapply(pop, n.piRNA.ind, global=global)
 }
 
-
 make.gamete <- function(ind) {
 	ans <- ind$gam1
 #~ 	rec <- sample(seq_along(ind$gam1), rbinom(1, length(ind$gam1), prob=0.5), replace=FALSE)
@@ -128,9 +127,9 @@ transposition.ind <- function(ind, global) {
 	ind$gam1[sample(nopiloc, new.insertions[1])] <- TRUE
 	ind$gam2[sample(nopiloc, new.insertions[2])] <- TRUE
 
-	ind$n.tot   <- n.tot.ind(ind, global, force.update=TRUE)
-	ind$n.piRNA <- n.piRNA.ind(ind, global, force.update=TRUE)
-	ind$n.sel   <- n.sel.ind(ind, global, force.update=TRUE)
+#~ 	ind$n.tot   <- n.tot.ind(ind, global, force.update=TRUE)
+#~ 	ind$n.piRNA <- n.piRNA.ind(ind, global, force.update=TRUE)
+#~ 	ind$n.sel   <- n.sel.ind(ind, global, force.update=TRUE)
 	ind
 }
 
@@ -168,6 +167,7 @@ summary.pop <- function(pop, global) {
 	ans$n.sel.var  <- var (n.sel)
 	ans$n.piRNA.mean<-mean(n.piRNA)
 	ans$n.piRNA.var<- var (n.piRNA)
+	ans$frq.permissive <- mean(n.piRNA==0)
 	ans$fitness.mean <- mean(fitnesses)
 	ans$fitness.var  <- var (fitnesses)
 	
@@ -178,8 +178,8 @@ run.one.simul <- function(global) {
 	pop <- init.pop(global)
 	ans <- list('0'=data.frame(summary.pop(pop, global)))
 	for (gg in 1:global$G) {
+		pop <- transposition.pop(pop, global) # Fitness is not updated
 		pop <- reproduction.pop(pop, global)
-		pop <- transposition.pop(pop, global)
 		if (gg == global$G || gg %% global$summary.every == 0) {
 			ans[[as.character(gg)]] <- summary.pop(pop, global)
 		}

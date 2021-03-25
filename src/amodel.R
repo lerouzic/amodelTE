@@ -8,44 +8,34 @@ cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n
 	ans
 }
 
-amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100, corr=TRUE) {
-	if (corr) 
-		s <- s*(1+4*u)
+amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100, corr=FALSE) {
 	ans <- list(
 		n=c(n0, rep(NA, Tmax)),
 		p=c(p0, rep(NA, Tmax)))
 	for (t in 1:Tmax) {
+		
+#~ 		# selection
+#~ 		p <- ans$p[t]
+#~ 		n <- ans$n[t]
+#~ 		ans$n[t+1] <- n - s*n*(1+2*u)
+#~ 		ans$p[t+1] <- p - sp*p*(1-p)/(1-sp*p)
+		
+#~ 		# transposition
+#~ 		p <- ans$p[t+1]
+#~ 		n <- ans$n[t+1]
+#~ 		cf <- (1-p)^(2*k)		
+#~ 		ans$n[t+1] <- n + n*u*cf
+#~ 		ans$p[t+1] <- p + n*u*pi*cf/k 
+
 		p <- ans$p[t]
 		n <- ans$n[t]
-		cf <- (1-p)^(2*k)
-		ans$n[t+1] <- n + n*u*cf - s*n
+		cf <- (1-p)^(2*k)		
+		ans$n[t+1] <- n + n*u*cf - n*s*(1+2*u)
 		ans$p[t+1] <- p + n*u*pi*cf/k - sp*p*(1-p)/(1-sp*p)
 	}
 	ans
 }
 
-amodel.LD <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100, corr=TRUE) {
-	if (corr)
-		s <- s*(1+4*u)
-	if(k !=1 || s!=0 || sp!=0) return(NA) # Only the neutral model with 1 cluster
-	ans <- list(
-		np=c(n0, rep(NA, Tmax)), # Permissive background
-		nr=c(n0, rep(NA, Tmax)), # Regulated background
-		n=c(n0, rep(NA, Tmax)),
-		p=c(p0, rep(NA, Tmax)))
-	for (t in 1:Tmax) {
-		p <- ans$p[t] + 1e-6
-		np <- (1+u)*ans$np[t]
-		nr <- ans$nr[t]
-		
-		ans$np[t+1] <- (nr*p*(1-p)^2 + np*(1-p)^3)/(1-p)^2
-		ans$nr[t+1] <- (nr*p*(1+p-p^2) + np*p*(1-p)^2)/p/(2-p)
-		
-		ans$p[t+1] <- p + np*u*pi*(1-p)^2
-		ans$n[t+1] <- ans$np[t+1]*(1-ans$p[t+1])^2 + ans$nr[t+1]*ans$p[t+1]*(2-ans$p[t+1])
-	}
-	ans
-}
 
 pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, corr=TRUE) {
 	if (corr)
@@ -78,7 +68,7 @@ pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, corr=TRUE) {
 simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/") {
 	simpar <- list(
 		nb.loci           = 1000,
-		neutral.loci      = if (sp==0) numeric(0) else 1:k, 
+		neutral.loci      = if (sp==0) 1:k else numeric(0), 
 		piRNA.loci        = 1:k,
 		piRNA.prob        = pi,
 		u                 = u,
@@ -135,12 +125,6 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 		do.call(amodel, c(as.list(pp), list(Tmax=Tmax)))
 	})
 	
-	dyn.res.LD <- lapply(model.par, function(mm) { 
-		pp <- model.default
-		pp[names(mm)] <- mm
-		do.call(amodel.LD, c(as.list(pp), list(Tmax=Tmax)))
-	})
-	
 	if (pred){
 		pred.res <- lapply(model.par, function(mm) {
 			pp <- model.default
@@ -158,13 +142,11 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 	}
 	
 	if (is.na(ylim)) ylim <- c(0, 1.2*max(unlist(sapply(dyn.res, "[[", what)), unlist(sapply(pred.res, "[[", what)), unlist(sapply(sim.res, "[[", what))))
-
+	
 	plot(NULL, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim)
 
 	for (ip in seq_along(model.par)) {
 		lines(0:Tmax, dyn.res[[ip]][[what]], col=col[ip])
-		if (length(dyn.res.LD[[ip]])>1)
-			lines(0:Tmax, dyn.res.LD[[ip]][[what]], col=col[ip], lty=3)
 		if (pred) {
 			if ("Max" %in% names(pred.res[[ip]]))
 				abline(h=pred.res[[ip]]$Max[[what]], lty=lty.max, col=col[ip])
