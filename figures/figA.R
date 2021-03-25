@@ -14,7 +14,7 @@ lty.eq <- 2
 col <- 1:10
 
 N.sim <- 10000
-rep.sim <- 6
+rep.sim <- 1
 Tmax <- 150
 
 use.cache=TRUE
