@@ -1,8 +1,5 @@
 source("../src/sim_functions.R")
 
-library(deSolve)
-library(phaseR)
-
 cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n) {
 	ans <- c(n0, rep(NA, Tmax))
 	for (t in 1:Tmax) {
@@ -11,17 +8,26 @@ cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n
 	ans
 }
 
-amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100, corr=FALSE) {
+model <- function(t, y, parms) {
+	with(as.list(c(y, parms)), {
+		dn <- n*u*(1-p)^(2*k) - n*s*(1+2*u)
+		dp <- n*u*pi/k*(1-p)^(2*k) - sp*p*(1-p)/(1-sp*p)
+		list(c(dn, dp))
+	})
+}
+
+amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100) {
+	library(deSolve)
+		
+	init <- setNames(c(n0, p0), nm=c("n","p"))
+	params <- setNames(c(u=u, pi=pi, k=k, s=s, sp=sp), nm=c("u","pi","k","s","sp"))
+	times <- seq(0, Tmax, 1)
+	
+	oo <- ode(y=init, times=times, func=model, parms=params)
+
 	ans <- list(
-		n=c(n0, rep(NA, Tmax)),
-		p=c(p0, rep(NA, Tmax)))
-	for (t in 1:Tmax) {
-		p <- ans$p[t]
-		n <- ans$n[t]
-		cf <- (1-p)^(2*k)		
-		ans$n[t+1] <- n + n*u*cf - n*s*(1+2*u)
-		ans$p[t+1] <- p + n*u*pi*cf/k - sp*p*(1-p)/(1-sp*p)
-	}
+		n=oo[,"n"],
+		p=oo[,"p"])
 	ans
 }
 
@@ -54,6 +60,20 @@ pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0) {
 									p=pp)))
 			}
 	}
+}
+
+num.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0) {
+	library(deSolve)
+	library(phaseR)
+		
+	init <- setNames(c(n0, p0), nm=c("n","p"))
+	params <- setNames(c(u=u, pi=pi, k=k, s=s, sp=sp), nm=c("u","pi","k","s","sp"))
+	times <- seq(0, 100, 1)
+
+	oo <- ode(y=init, times=times, func=model, parms=params)
+	eq <- findEquilibrium(model, y0=oo[nrow(oo),-1], parameters=params, state.names=names(init), summary=FALSE)
+
+	return(list(Eq=list(n=eq$ystar["n",1], p=eq$ystar["p",1])))
 }
 
 jacob.dtdc <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, ...) {
