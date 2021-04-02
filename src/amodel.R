@@ -1,5 +1,8 @@
 source("../src/sim_functions.R")
 
+library(deSolve)
+library(phaseR)
+
 cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n) {
 	ans <- c(n0, rep(NA, Tmax))
 	for (t in 1:Tmax) {
@@ -13,20 +16,6 @@ amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100, corr=FA
 		n=c(n0, rep(NA, Tmax)),
 		p=c(p0, rep(NA, Tmax)))
 	for (t in 1:Tmax) {
-		
-#~ 		# selection
-#~ 		p <- ans$p[t]
-#~ 		n <- ans$n[t]
-#~ 		ans$n[t+1] <- n - s*n*(1+2*u)
-#~ 		ans$p[t+1] <- p - sp*p*(1-p)/(1-sp*p)
-		
-#~ 		# transposition
-#~ 		p <- ans$p[t+1]
-#~ 		n <- ans$n[t+1]
-#~ 		cf <- (1-p)^(2*k)		
-#~ 		ans$n[t+1] <- n + n*u*cf
-#~ 		ans$p[t+1] <- p + n*u*pi*cf/k 
-
 		p <- ans$p[t]
 		n <- ans$n[t]
 		cf <- (1-p)^(2*k)		
@@ -37,32 +26,43 @@ amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100, corr=FA
 }
 
 
-pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, corr=TRUE) {
-	if (corr)
-		s <- s*(1+4*u)
+pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0) {
 	if (p0 != 0) warning("Most models assume that p0=0.")
-	
+	ss <- s*(1+2*u)
+	pp <- 1-(ss/u)^(1/2/k)
+	if (pp < 0) pp <- 0
 	if (s==0) {
 		return(list(Eq=list(
 						n=n0+k/pi,
 						p=1)))
 	} else { #s != 0
 		if (sp == 0) {
+			nn <- n0 + (k/pi)*(1- (2*k*(ss/u)^(1/2/k) - ss/u)/(2*k-1))
 			return(list(Max=list(
-							n= n0 + (k/pi)*(1-(s/u)^(1/2/k) + s/u/(2*k-1)*(1-(s/u)^(1/2/k-1))),
-#~ 							n=n0+(k/pi)*(1-(s/u)^(1/2/k))^2,
-							p=1-(s/u)^(1/(2*k))),
+							n = nn,
+							p = pp),
 						Eq=list(
-							n=0,
-							p=1-1/(u*(1+n0*pi)/s-1))))
+							n = 0, 
+#~ 							p = 1 - ((1-pp)^(1-2*k) + (2*k-1)*u*pi*nn/k/ss)^(1/(1-2*k)) )
+							p = 1- ((u/ss)*(2*k-1)*pp +1) ^ (1/(1-2*k)) )
+						))
 			} else { #sp != 0
 				return(list(Eq=list(
 #~ 									n=k*sp/(pi*u)*((s/u)^(1/2/k)+(s/u)^(-1/2/k) - 2),
 #~ 									n=k*s/(pi*u)*(1-(s/u)^(1/2/k))/((s/u)^((2*k-1)/2/k)*(1-s*(s/u)^(1/2/k))),
-									n=(k/pi)*((s/u)^(1/k)-(s/u)^(1/2/k))/(s*(s/u)^(1/2/k)-1),
-									p=(1-(s/u)^(1/2/k)))))
+									n=k*s*pp*(ss/u)^(1/2/k)/pi/ss/(1-s*pp),
+									p=pp)))
 			}
 	}
+}
+
+jacob.dtdc <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, ...) {
+	ss <- s*(1+2*u)
+	pp <- 1-(ss/u)^(1/2/k)
+	nn <- k*s*pp*(ss/u)^(1/2/k)/pi/ss/(1-s*pp)
+	rbind(
+		  c(0,       -2*k*nn*u*(ss/u)^((2*k-1)/2/k)),
+		  c(pi*ss/k, -2*nn*pi*u*(ss/u)^((2*k-1)/2/k) + (1-s)/(1-s*pp)^2 - 1))
 }
 
 simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/") {
@@ -117,7 +117,7 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, N=10000, Tmax=1
 
 plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FALSE, legend=TRUE, Tmax=100, N=10000, rep=1, nb.simpt=21, use.cache=TRUE,
 	xlab="Generations", ylab=if(what=="n") "Copy number" else "Cluster frequency", xlim=c(0,Tmax), ylim=NA,
-	legend.pos="topleft") {
+	legend.pos="topleft", ...) {
 
 	dyn.res <- lapply(model.par, function(mm) { 
 		pp <- model.default
@@ -143,7 +143,7 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 	
 	if (is.na(ylim)) ylim <- c(0, 1.2*max(unlist(sapply(dyn.res, "[[", what)), unlist(sapply(pred.res, "[[", what)), unlist(sapply(sim.res, "[[", what))))
 	
-	plot(NULL, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim)
+	plot(NULL, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
 
 	for (ip in seq_along(model.par)) {
 		lines(0:Tmax, dyn.res[[ip]][[what]], col=col[ip])
