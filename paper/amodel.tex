@@ -14,6 +14,9 @@
 
 \usepackage{url}
 
+\usepackage[title]{appendix}
+%~ \renewcommand{\appendixname}{Appendix}
+
 \usepackage[top=0.85in,left=2.75in,footskip=0.75in,marginparwidth=2in]{geometry}
 
 % headrule, footrule and page numbers
@@ -60,6 +63,7 @@
 
 \usepackage{bm}
 \usepackage{amsmath}
+\usepackage{mathtools}
 
 \usepackage[english]{babel}
 
@@ -134,7 +138,9 @@ The model also assumes linkage equilibrium in a sexual, random mating population
 
 If $u_n$ is constant, the dynamics is exponential, but if $u_0 > v$, $d u_n / d n < 0$, $\overline{u_n} \simeq u_{\bar n}$, and $\mathrm{lim} (u_n) < v$, with $u_{\hat n} = v$, then an equilibrium can be reached at $n = \hat n$. 
 
-If the TEs are deleterious ($w_n < w_0$), then the effect of selection can be accounted for (the approximation being better when the fitness function $w_n$ is smooth). 
+If TEs are deleterious ($w_n < w_0$), then individuals carrying more copies reproduces less, which decreases the average copy number every generation. The effect of selection can be accounted for using traditional quantitative genetics, considering the number of copies $n$ as a quantitative trait: $\Delta \bar n \simeq \mathrm{Var}(n) \mathrm d \log(w_n)/ \mathrm d n | \bar n$, where $\mathrm{Var}(n)$ is the variance in copy number in the population, and $\mathrm d \log(w_n)/ \mathrm d n | \bar n$  approximates the selection gradient on $n$. The approximation is better when the fitness function $w_n$ is smooth and the copy number $n$ is not close to 0. Assuming random mating and no linkage disequilibrium, $n$ is approximately Poisson-distributed in the population, and $\mathrm{Var}(n) \simeq \bar n$. 
+
+\cite{CC83} propose to add up the effects of transposition and selection to approximate the variation in copy number across generations:
 
 \begin{equation}\label{eq:cc2}
 \bar n_{t+1} \simeq \bar n_t(u_n - v) + \bar n \frac{d \log w_n}{d n} \Bigr|_{\bar n}.
@@ -142,140 +148,239 @@ If the TEs are deleterious ($w_n < w_0$), then the effect of selection can be ac
 
 Equilibrium is reached when $\bar n_{t+1} = \bar n_t = \hat n$, which can be computed when the fitness function $w_n$ is known. 
 
-%~ \begin{figure}[h]
-%~ \begin{center}
-%~ << cc1, echo=FALSE, fig=TRUE, width=10, height=4 >>=
-%~ source("amodel1.R")
-
-%~ layout(t(1:2))
-%~ plot(cc83(u=function(n) 0.4/(1+3*n), v=0.01, dlw=function(n) 0, Tmax=400), xlab="Generations", ylab="Copy number", type="l")
-%~ plot(cc83(u=function(n) 0.1, dlw=function(n) -0.001*n, v=0.01, Tmax=50), xlab="Generations", ylab="Copy number", type="l")
-%~ @
-%~ \end{center}
-%~ \caption{Different equilibria under the Charlesworth \& Charlesworth 1983 model: left, neutral model, the equilibrium is acheved when transposition regulation brings the transposition rate at the level of the deletion rate; right: selection model, the equilibrium is reached when selection is stronger than transposition. }
-%~ \end{figure}
 
 \section{piRNA model}
 
-\subsection{Basic setting} 
+\subsection{Neutral model} 
 
-The basic model setting assumes a single piRNA cluster in the genome, which segregates at frequency $p_t$ in an infinite population at generation $t$. The only mechanisms considered are replicative transposition and regulation. The transposition rate per copy and per generation is $u$ in absence of regulation, and $0$ when a cluster is present in the genome (i.e., regulation is dominant). Assuming random mating and no linkage disequilibrium (i.e.\ no correlation between $n$ and the genotype at the regulatory cluster), when $\pi$ is the insertion probability in a pi-cluster,
+The model assumes $k$ identical piRNA clusters in the genome, and the total probability to transpose in a cluster region is $\pi$. Each cluster locus can harbor two alleles: a regulatory allele (i.e., the cluster carries a TE insertion), which segregates at frequency $p$, and an "empty" allele (frequency $1-p$). Allele frequencies at all clusters were considered to be the same (a consequence of the infinite population assumption). If the regulatory allele frequency at generation $t$ is $p_t$, the average number of cluster insertions for a diploid individual is $2kp_t$. Deletions were neglected ($v=0$). The presence of a single regulatory allele at any cluster was supposed to trigger complete regulation: the transposition rate per copy and per generation was $u$ in absence of regulation, and $0$ otherwise. Assuming random mating and no linkage disequilibrium (i.e.\ no correlation between $n$ and the genotype at the regulatory cluster),
 
 \begin{align}\label{eq:basic}
 \begin{split}
-\Delta \bar n_t = n_{t+1} - n_t &= \bar n_t u (1-p_t)^2 \\
-\Delta p_t = p_{t+1} - p_t &= \pi \bar n_t u (1-p_t)^2
+\Delta \bar n_t = n_{t+1} - n_t &= \bar n_t u (1-p_t)^{2k} \\
+\Delta p_t = p_{t+1} - p_t &= \frac{\pi}{k}  \bar n_t u (1-p_t)^{2k}.
 \end{split}
 \end{align}
 
-The system admits three equilibria: $E_1: u = 0$ (no transposition), $E_2: \hat n_t = 0$ (loss of the transposable element), and $E_3: \hat p_t = 1$ (fixation of the regulatory cluster). The dynamics of $n_t$ and $p_t$ are proportional ($\Delta p_t = \pi \Delta \bar n_t$, figure~\ref{fig:figA}), which means that under the reasonable assumption that $p_0 = 0$ (no regulatory clusters at the beginning of the invasion), $\bar n_t = n_0 + (1/\pi) p_t$. As a consequence, the full solution for the "cluster fixation" equilibrium $E_3$ is $\hat p = 1, \hat n = n_0 + 1/\pi$. Strikingly, the copy number at equilibrium does not depend on the transposition rate. 
+We approximated this discrete (non-overlapping) generation model with a continuous process, and the neutral model was rewritten as a set of two differential equations on $\bar n$ (relabelled $n$ for simplicity) and $p$:
+
+\begin{align}\label{eq:neutral}
+\begin{split}
+\frac{\mathrm d n}{\mathrm d t} &= n u (1-p)^{2k} \\
+\frac{\mathrm d p}{\mathrm d t} &= \frac{\pi}{k} n u (1-p)^{2k}.
+\end{split}
+\end{align}
+
+Initial conditions were fixed to $n_0 = 1$ and $p_0 = 0$. 
+
+The system admits three equilibria: $E_1: u = 0$ (no transposition), $E_2: \hat n = 0$ (loss of the transposable element), and $E_3: \hat p = 1$ (fixation of the regulatory cluster). Equilibria $E_1$ and $E_2$ do not deserve to be investigated further, as $u=0$, $n_0=0$, or $p_0=1$ do trivially result in the absence of any TE invasion. Equilibrium $E_3$ is analytically tractable, as $\mathrm d n / \mathrm d p = k/\pi$, and $n = n_0 + pk/\pi$ at any point of time. 
+
+\begin{equation}\label{eq:eqneutral}
+\begin{cases}
+\hat n &= n_0 + k/\pi \\
+\hat p &= 1.
+\end{cases}
+\end{equation}
+
+Cluster fixation is asymptotic ($\lim_{t \rightarrow \infty} p = 1$), and the equilibrium is asymptotically stable ($\mathrm d n /\mathrm d t > 0$ and $\mathrm d p/ \mathrm d t > 0$). 
 
 \begin{figure}[h]
 \begin{adjustwidth}{-1in}{0in}
 \begin{flushright}
 	\includegraphics[width=1\textwidth]{../figures/figA}
-\caption{\label{fig:figA} Dynamics in the basic piRNA model, $n_0=1, \pi=0.03$. Left: average number of copies, right: frequency of the segregating cluster in the population.Open symbols: simulations, plain lines: difference equations, hyphenated lines: predicted equilibrium. }
+\caption{\label{fig:figA} Dynamics in the neutral piRNA model, $n_0=1, \pi=0.03$. The top panel illustrates the influence of the transposition rate, the bottom panel of the number of clusters. Left: number of copies $n$, right: frequency of the segregating clusters in the population ($p$). Open symbols: simulations, plain lines: difference equations, hyphenated lines: predicted equilibria. }
 \end{flushright}\end{adjustwidth}
 \end{figure}
 
-
-
-\subsection{Number of clusters}
-
-We then assumed that there are $k$ independent regulatory clusters in the genome. Each cluster has the same size (i.e., the probability to insert in a given cluster is $\pi/k$), and the presence of a TE copy in a single cluster is enough to fully suppress transposition. As we assumed that all clusters are identical and that they all start at frequency $p_0 = 0$, each cluster $1 \leq i \leq k$ segregate at the same frequency $p_{it} = p_t$ in the population. Equation~\ref{eq:basic} can then be extended as:
-
-\begin{align}\label{eq:clusters}
-\begin{split}
-\Delta \bar n_t &= \bar n_t u (1-p_t)^{2k} \\
-\Delta p_t &= \frac{\pi}{k} \bar n_t u (1-p_t)^{2k}.
-\end{split}
-\end{align}
-
-Solving for $\Delta \bar n = 0$ and $\Delta p= 0$ lead to the same equilibria as for Equation~\ref{eq:basic}, with $\hat p = 1$ (all clusters eventually reach fixation) and $\hat n = k/\pi$. This last result is rather surprising (the final number of copies is proportional to the number of clusters), although it matches the numerical results by \cite{Kof19}. 
-
-The influence of various parameters on the dynamics of the system (time to reach 90\% of the maximum number of copies) and on the equilibrium state is illustrated in figure~\ref{fig:figB}. 
-
-\begin{figure}[t]
-\begin{adjustwidth}{-1in}{0in}
-\begin{flushright}
-\includegraphics[width=1\textwidth]{../figures/figB}
-\caption{\label{fig:figB} Influence of the basic model parameters ($u$, $\pi$, $n_0$, and $k$) on the equilibrium state (number of copies at equilibrium and time to reach the equilibrium). }
-\end{flushright}\end{adjustwidth}
-\end{figure}
-
-
-Time to equilibrium depends a lot on the transposition rate (large transposition rates reach equilibrium in a few generations, low transposition rates may need thousands). However, the number of copies at equilibrium does not depend on the transposition rate (!). The most important factor for the equilibrium number of copies is $\pi$, the relative size of pi-clusters in the genome. If clusters are rare, copies can accumulate fast before regulation kicks in. Finally, the equilibrium copy number is insensitive to $n_0$, but the time to regulation, slightly more. 
 
 
 \subsection{Selection}
 
-Natural selection, by favoring the reproduction of genotypes with fewer TE copies, generally acts in the same direction as regulation. A piRNA regulation model implementing selection could be derived by combining equations \ref{eq:cc2} and \ref{eq:basic}. In order to simplify the calculation, we will derive the results assuming that the deleterious effects of TE copies are independent, i.e.\ $w_n = \exp(- n s)$, where $n$ is the copy number and $s$ the coefficient of selection (deleterious effect per insertion), so that $\mathrm{d} \log w_n / \mathrm{d} n = -s$. 
+Natural selection, by favoring the reproduction of genotypes with fewer TE copies, generally acts in the same direction as regulation. A piRNA regulation model implementing selection could be derived by combining equations \ref{eq:cc2} and \ref{eq:basic}. In order to simplify the analysis, we derived the results assuming that the deleterious effects of TE copies were independent, i.e.\ $w_n = \exp(- n s)$, where $n$ is the copy number and $s$ the coefficient of selection (deleterious effect per insertion), so that $\mathrm{d} \log w_n / \mathrm{d} n = -s$. 
 
-\begin{equation}\label{eq:seln}
-\Delta \bar n_t = \bar n_t u (1-p_t)^{2k} - \bar n s,
+Numerical simulations suggested that the approximation suggested by \citep{CC83} (equation~\ref{eq:cc2}), based on the independence of transposition and selection, was rather unconvincing when the transposition rate was high, typically, at the beginning of the dynamics. This discrepancy is mainly due to the fact that transposition overdisperses the copy number distribution compared to the theoretical Poisson: after transposition, the copy number rises to $\bar n = \bar n(1+u)$, while its variance becomes $\mathrm V(n) = \bar n (1+u)^2$. Neglecting terms in $u^2$, the apparent efficiency of selection $s^\prime$ thus seem to increase by a factor $1+2u$. Note that this correction is subtle and depends on model details (transposition before or after reproduction, immediate or delayed fitness penalty of new TE insertions). The correction $s^\prime \simeq s(1+2u)$ was used here solely to match the arbitrary modelling options of the simulation routine. 
+
+The following relies on the additional assumption that $1-\pi \simeq 1$, (leading to $n \gg 2kp$, i.e.\ that the number of TE copies in the clusters is never large enough to make a difference in the total TE count). We will describe two selection scenarios that happened to lead to qualitatively different outcome: (i) TE insertions in pi-clusters are neutral, and (ii) TE insertions in pi-clusters are as deleterious as the other insertions. 
+
+\paragraph{Deleterious TEs \& neutral clusters} If cluster TEs are neutral, the model becomes:
+
+\begin{align}\label{eq:dtnc}
+\begin{split}
+\frac{\mathrm d n}{\mathrm d t} &= n u (1-p)^{2k} - n s^\prime \\
+\frac{\mathrm d p}{\mathrm d t} &= \frac{\pi}{k} n u (1-p)^{2k}.
+\end{split}
+\end{align}
+
+This equation only gives two equilibria, $E_2: \bar n = 0$, and $E_3: s^\prime=0$ and $p=1$, which is the same as for the neutral model (equation~\ref{eq:neutral}): no selection and fixation of all regulatory clusters. At the beginning of the dynamics, assuming $p_0 = 0$, the TE invades if $u > s^\prime$ (otherwise the system converges immediately to equilibrium $E_2$ and the TE is lost). The copy number increases ($\mathrm d n/\mathrm d t > 0$) up to a maximum $n^\ast$, which is achieved when $p=p^\ast$. The maximum copy number can be obtained analytically (Appendix~\ref{app:maxdtnc}):
+
+\begin{equation}\label{eq:maxdtnc}
+\begin{split}
+	p^\ast &= 1-\left(\frac{s^\prime}{u}\right)^\frac{1}{2k} \\
+	n^\ast &= n_0 + \frac{k}{\pi}\left[ 1- \frac{1}{2k-1} \left(2k\left(\frac{s^\prime}{u}\right)^\frac{1}{2k} - \frac{s^\prime}{u}\right) \right].
+\end{split}  
 \end{equation}
 
-\paragraph{Deleterious TEs} For the dynamics of cluster frequency, two variants can be defined, depending on whether the cluster copies are neutral or deleterious. If cluster TEs are neutral, the model remains:
+Once the maximum number of copies is achieved, cluster copies keep on accumulating, decreasing the transposition rate, which leads to a decrease in the copy number, up to the loss of the the element ($\hat n = 0$ at equilibrium). At that stage, clusters are not fixed, and the equilibrium cluster frequency $\hat p$ can be expressed as a function of copy number and cluster frequency at the maximum ($p^\ast$ and $n^\ast$) (Appendix~\ref{app:exhatp}:
 
-\begin{equation}\label{eq:selpn}
-\Delta p_t = \pi \bar n_t u (1-p_t)^{2k}.
+\begin{equation}\label{eq:exhatp}
+	\hat{p} - \frac{s^\prime}{u(2k-1)}\frac{1}{(1-\hat p)^{2k-1}} = p^\ast - \frac{s^\prime}{u(2k-1)}\frac{1}{(1-p^\ast)^{2k-1}} - \frac{\pi n^\ast}{k},
 \end{equation}
 
-The model obtained by combining equations~\ref{eq:seln} and~\ref{eq:selpn} only gives two equilibria, $E_2: \bar n = 0$, and $E_3: s=0$ and $p=1$, which is the same as for equation~\ref{eq:clusters} (no selection and fixation of all regulatory clusters). At the beginning of the dynamics, assuming $p_0 = 0$, the TE invades if $u > s$ (otherwise the system converges to equilibrium $E_2$ and the TE is lost). The copy number increases up to a maximum $n^\ast$, which can be calculated analytically (Table~\ref{tab:eqs}). The number of copies then decrease and drop to $\hat n = 0$. At that point, the system reaches an equilibrium, but the clusters are not fixed. An approximate value for the equilibrium cluster frequency $\hat p$ is provided in Table~\ref{tab:eqs}.
-
-\paragraph{Deleterious TEs and clusters} If the cluster insertions are as deleterious as other TEs, 
-
-\begin{equation}\label{eq:selps}
-\Delta p_t = \pi \bar n_t u (1-p_t) - s p_t \frac{1-p_t}{1- s p_t}.
+\noindent from which an exact solution for $\hat p$ cannot be calculated. The approximation:
+\begin{equation}\label{eq:approxhatp}
+	\hat p \simeq 1-\left[\frac{u}{s^\prime}(2k-1)p^\ast +1\right]^\frac{1}{1-2k}
 \end{equation}
 
+\noindent could be derived (Appendix~\ref{app:approxhatp}, and happened to be acceptable for a wide range of transposition rates (although less precise regarding the selection coefficient) (Figure~\ref{fig:figC2}). 
 
-\begin{table}
-\renewcommand{\arraystretch}{3}
-\begin{adjustwidth}{-2in}{0in}
+\begin{figure}[h]
+\begin{adjustwidth}{-1in}{0in}
 \begin{flushright}
-\begin{tabular}{p{3cm}p{6cm}p{7cm}}
- & single cluster & $k$ clusters \\
-Neutral						& $\begin{cases} 
-								\hat n = n_0 + 1/\pi \\ 
-								\hat p = 1 
-							\end{cases}$
-							& $\begin{cases} 
-								\hat n = n_0 + k/\pi \\ 
-								\hat p = 1 
-							\end{cases}$  \\
-Deleterious TEs 			& $\begin{cases} 
-								n^\ast = n_0 + \frac{1}{\pi}(1-\sqrt{s/u})^2 \\
-								p^\ast = 1 - \sqrt{s/u} 
-							\end{cases}$ 
-							$\begin{cases}
-								\hat n = 0 \\ 
-								\hat p \simeq 1-(\frac{u}{s}(1+n_0\pi)-1)^{-1} 
-							\end{cases}$
-							& $\begin{cases} 
-								n^\ast = n_0 + \frac{k}{\pi}[1 - (\frac{s}{u})^\frac{1}{2k} + \frac{s}{u(2k-1)} (1 - (\frac{s}{u})^\frac{1}{2k-1})] \\ 
-								p^\ast = 1 - (s/u)^\frac{1}{2k}
-							\end{cases}$ 
-							$\begin{cases} 
-								\hat n = 0 \\ 
-								\hat p \simeq 1-[\frac{u}{s}(2k-1)(1+\frac{n_0 \pi}{k})-1]^\frac{1}{1-2k}
-							\end{cases}$\\
-Deleterious TEs \& clusters	& $ \begin{cases} 
-								\hat n = \frac{1}{\pi} \sqrt\frac{s}{u} \frac{\sqrt{s/u}-1}{s\sqrt{s/u}-1} \\
-								\hat p = 1 - \sqrt{s/u}
-							\end{cases}$ &
-							$\begin{cases}
-								\hat n = \frac{k}{\pi} \frac{(s/u)^\frac{1}{k} - (s/u)^\frac{1}{2k}}{s (s/u)^\frac{1}{2k}-1} \\
-								\hat p = 1-(s/u)^\frac{1}{2k}
-							\end{cases}$
-\end{tabular}
-\caption{\label{tab:eqs} Equilibrium copy number ($\hat n$) and cluster frequency ($\hat p$) in three selection conditions (neutral model, deleterious TEs, deleterious TEs and clusters). The left column illustrates the simplest case of $k=1$ cluster. Note that the neutral equilibria can be retrieved from the selection models by setting $s=0$, and the single cluster result can be obtained by setting $k=1$ in the full model. In the case of the deleterious TEs model, TEs reach a temporary maximum copy number $n^\ast$ before being eliminated, an analytical approximation for the maximum is provided. }
+	\includegraphics[width=1\textwidth]{../figures/figC}
+\caption{\label{fig:figC} Dynamics of the deleterious TE - neutral cluster model. The top panel illustrates the influence of the selection coefficient $s$, the bottom panel of the number of clusters $k$. Left: number of copies $n$, right: frequency of the segregating clusters in the population ($p$). Open symbols: simulations, plain lines: difference equations, hyphenated lines: predicted equilibria. }
 \end{flushright}\end{adjustwidth}
-\end{table}
+\end{figure}
 
+\begin{figure}[h]
+\begin{adjustwidth}{-1in}{0in}
+\begin{flushright}
+	\includegraphics[width=1\textwidth]{../figures/figC2}
+\caption{\label{fig:figC2} Equilibrium cluster frequency $\hat p$ for the deleterious TE - neutral cluster model as a function of the transposition rate $u$ and the selection coefficient $s$. The number of clusters $k$ is indicated with different line types. The approximation proposed in equation \ref{eq:approxhatp} is illustrated in gray. }
+\end{flushright}\end{adjustwidth}
+\end{figure}
+
+
+\paragraph{Deleterious TEs and deleterious clusters} If the cluster insertions are as deleterious as other TEs, selection acts on cluster frequency as predicted by population genetics (assuming no dominance): 
+\begin{equation}\label{eq:selps}
+\begin{split}
+\frac{\mathrm d n}{\mathrm d t} &= n u (1-p)^{2k} - n s^\prime \\
+\frac{\mathrm d p}{\mathrm d t} &= \frac{\pi}{k} n u (1-p)^{2k} - s p \frac{1-p}{1- s p}.
+\end{split}
+\end{equation}
+
+This allows for a new equilibrium $E_4$:
+
+\begin{equation}\label{eq:selpseq}
+\begin{cases}
+\displaystyle \hat n = \frac{k}{\pi}\frac{s}{s^\prime} \left(\frac{s^\prime}{u}\right)^\frac{1}{2k}\frac{\hat p}{1-s\hat p} \\
+\displaystyle \hat p = 1 - \left(\frac{s^\prime}{u}\right)^\frac{1}{2k}.
+\end{cases}
+\end{equation}
+
+The equilibrium exists ($\hat n > 0$ and $\hat p > 0$) whenever $s < u(1+2u)$, i.e.\ the transposition rate must be substantially larger than the selection coefficient. 
+
+\begin{figure}
+\begin{adjustwidth}{-1in}{0in}
+\begin{center}
+	\includegraphics[width=15cm]{../figures/figE}
+\caption{\label{fig:figE} Equilibrium copy number ($\hat n$, black) and cluster frequency ($\hat p$, red) as a function of model parameters ($u$, $s$, and $\pi$) in the deleterious TEs - deleterious cluster model. Default parameter values were $u=0.1$, $s=0.01$, and $\pi=0.03$. The number of clusters ($k=1$, $k=2$, and $k=5$) is indicated by different line styles. }
+\end{center}\end{adjustwidth}
+\end{figure}
+
+A linear stability analysis (Appendix~\ref{app:selpseq}) shows that for the whole range of $u$, $\pi$, and $k$, as well as for most of the reasonable values of $s$, the equilibrium is a stable focus, i.e.\ the system converges to the equilibrium while oscillating around it. 
+
+\begin{figure}
+\begin{adjustwidth}{-1in}{0in}
+\begin{center}
+	\includegraphics[width=5cm]{../figures/figG}
+\caption{\label{fig:figG} Equilibrium stability for the deleterious TES - deleterious cluster model. The figure represents the real part of the first eigenvalue of the Jacobian matrix for two major parameters ($u$ and $s$), with $k=1$ and $\pi = 0.03$. The eigenvalue is negative for the whole parameter range, and is a complex number for most of the range (below the red line). The purple line delineates $s = u/(1+2u)$, beyond which selection is too strong to let the TE invade (white area). }
+\end{center}\end{adjustwidth}
+\end{figure}
 
 
 \printbibliography
 
+
+\newpage 
+
+\begin{appendices}
+
+\section{Mathematical details}
+
+\subsection{\label{app:maxdtnc} Equation \ref{eq:maxdtnc}}
+
+When the copy number $n$ achieves its maximum $n^\ast$, $\mathrm d n/\mathrm d t = 0$. This happens when the cluster frequency $p^\ast$ is:
+
+\begin{equation*}
+\begin{split}
+	\frac{\mathrm d n}{\mathrm d t} &= n^\ast u (1-p^\ast)^{2k} - n^\ast s^\prime = 0 \\
+	p^\ast &= 1 - \left(\frac{s^\prime}{u}\right)^{\frac{1}{2k}}.
+\end{split}
+\end{equation*}
+
+The number of copies cumulated while $p$ is rising from $p_0$ to $p^\ast$ can be calculated by integrating both sides:
+
+\begin{equation*}
+\begin{split}
+	\frac{\mathrm d n}{\mathrm d p} &= \frac{k}{\pi}\left(1-\frac{s^\prime}{u(1-p)^{2k}}\right) \\
+	\int_{n_0}^{n^\ast} \mathrm d n &=  \frac{k}{\pi} \left[\int_{p_0}^{p^\ast} \mathrm d p - \frac{s^\prime}{u} \int_{p_0}^{p^\ast} (1-p)^{-2k} \mathrm d p \right] \\
+	n^\ast - n_0 &= \frac{k}{\pi}\left[p^\ast - p_0 - \frac{s^\prime}{u(2k-1)}((1-p^\ast)^{1-2k} - 1) \right] \\
+	n^\ast &= n_0 + \frac{k}{\pi}\left[ p^\ast + \frac{s^\prime}{u(2k-1)}(1-(1-p^\ast)^{1-2k}) \right] \\
+	n^\ast &= n_0 + \frac{k}{\pi}\left[ 1- \frac{1}{2k-1}\left(2k\left(\frac{s^\prime}{u}\right)^\frac{1}{2k} - \frac{s^\prime}{u}\right) \right].
+\end{split}  
+\end{equation*}
+
+\subsection{\label{app:exhatp} Equation \ref{eq:exhatp}}
+
+The strategy was very similar than for obtaining $n^\ast$, with $\mathrm d p / \mathrm d n$ integrated both sides from the maximum to the equilibrium:
+
+\begin{equation*}
+\begin{split}
+	\int_{n^\ast}^{\hat n = 0} \mathrm d n &=  \frac{k}{\pi} \left[ \int_{p^\ast}^{\hat p} \mathrm d p - \frac{s^\prime}{u} \int_{p^\ast}^{\hat p} (1-p)^{-2k} \mathrm d p \right] \\
+	-n^\ast &= \frac{k}{\pi}\left[(\hat p - p^\ast) - \frac{s^\prime}{u} \left( \frac{(1-\hat p)^{1-2k} - (1-p^\ast)^{1-2k}}{2k-1}\right)\right].
+\end{split}
+\end{equation*}
+
+\subsection{\label{app:approxhatp} Equation \ref{eq:approxhatp}}
+
+Rewriting the previous equation with $\delta p = \hat p - p^\ast$ and $1-p^\ast = q^\ast$ gives:
+
+\begin{equation*}
+	-n^\ast = \frac{k}{\pi}\left[\delta p - \frac{s^\prime}{u(1-2k)} \frac{1}{(q^\ast - \delta p)^{2k-1}} - \frac{s^\prime}{u(1-2k)} {q^\ast}^{1-2k}\right],
+\end{equation*}
+
+\noindent which turns out to be dominated by the second term ($ 1/(q^\ast - \delta p)^{2k-1} \gg \delta p$ when $\delta p$ increases) for most parameter values. As a consequence, neglecting $\hat p - p^\ast$ leads to:
+\begin{equation*}
+\begin{split}
+	n^\ast &\simeq \frac{k}{\pi}\left[\frac{s^\prime}{u} \left( \frac{(1-\hat p)^{1-2k} - (1-p^\ast)^{1-2k}}{2k-1}\right)\right] \\
+	\Longleftrightarrow \hat p &\simeq 1- \left[ (1-p^\ast)^{1-2k} + \frac{\pi u (2k-1)}{s^\prime k} n^\ast \right]^\frac{1}{1-2k}.
+\end{split}
+\end{equation*} 
+
+Replacing $p^\ast$ and $n^\ast$ with their expressions from equation~\ref{eq:maxdtnc} and reorganizing gives:
+\begin{equation*}
+		\hat p \simeq 1-\left[\frac{u}{s^\prime}(2k-1)(1+\frac{n_0 \pi}{k}-\left(\frac{s^\prime}{u}\right)^\frac{1}{2k})+1\right]^\frac{1}{1-2k}.
+\end{equation*}
+
+Assuming that $n_0$ is reasonably small and $\pi \ll 1$, the term $n_0 \pi / k$ can be further neglected, and:
+\begin{equation*}
+		\hat p \simeq 1-\left[\frac{u}{s^\prime}(2k-1)(1-\left(\frac{s^\prime}{u}\right)^\frac{1}{2k})+1\right]^\frac{1}{1-2k}.
+\end{equation*}
+
+\subsection{\label{app:selpseq} Equilibirum stability for equation \ref{eq:selpseq}}
+
+The Jacobian matrix corressponding to the equilibrum~\ref{eq:selpseq} (using the shortcuts $\dot n = \mathrm d n / \mathrm d t $ and  $\dot p = \mathrm d p / \mathrm d t$) is:
+
+\begin{equation*}
+\bm J = 
+   \begin{bmatrix}  \frac{\partial \dot n}{\partial n} &  \frac{\partial \dot n}{\partial p} \\[1em]
+					\frac{\partial \dot p}{\partial n} &  \frac{\partial \dot p}{\partial p} \end{bmatrix} =
+   \begin{bmatrix*}[l]
+				0 & -2 k \hat n u \left( \frac{s^\prime}{u}\right) ^\frac{2k-1}{2k} \\[1em]
+				\frac{\pi s^\prime}{k} & -2 \hat n u \pi \left( \frac{s^\prime}{u}\right) ^\frac{2k-1}{2k} + \frac{1-s}{(1-s \hat p)^2} - 1
+	\end{bmatrix*}.
+\end{equation*}
+
+Eigenvalues are negative (i.e., the equilibrum is stable) for all tested parameter combinations. Eigenvalues happen to be complex for all parameter combinations, except for very large values of $s$, the equilibrium is thus a stable focus, reached asymptotically by oscillating around it. 
+
+\begin{figure}
+\begin{adjustwidth}{-2in}{0in}
+\begin{flushright}
+	\includegraphics[width=15cm]{../figures/figF}
+	\caption{\label{fig:figF}  First Eigenvalue of the Jacobian matrix as a function of model parameters ($u$, $s$, and $\pi$) in the deleterious TEs - deleterious cluster model. Default parameter values were $u=0.1$, $s=0.01$, and $\pi=0.03$. The number of clusters ($k=1$, $k=2$, and $k=5$) is indicated by different line styles. Eigenvalues are complex for most of the range of the parameters, real part is in black, imaginary part is in blue. }
+\end{flushright}\end{adjustwidth}
+\end{figure}
+
+\end{appendices}
 
 \end{document}
