@@ -149,9 +149,9 @@ If TEs are deleterious ($w_n < w_0$), then individuals carrying more copies repr
 Equilibrium is reached when $\bar n_{t+1} = \bar n_t = \hat n$, which can be computed when the fitness function $w_n$ is known. 
 
 
-\section{piRNA model}
+\section{Results}
 
-\subsection{Neutral model} 
+\subsection{Neutral trap model} 
 
 The model assumes $k$ identical piRNA clusters in the genome, and the total probability to transpose in a cluster region is $\pi$. Each cluster locus can harbor two alleles: a regulatory allele (i.e., the cluster carries a TE insertion), which segregates at frequency $p$, and an "empty" allele (frequency $1-p$). Allele frequencies at all clusters were considered to be the same (a consequence of the infinite population assumption). If the regulatory allele frequency at generation $t$ is $p_t$, the average number of cluster insertions for a diploid individual is $2kp_t$. Deletions were neglected ($v=0$). The presence of a single regulatory allele at any cluster was supposed to trigger complete regulation: the transposition rate per copy and per generation was $u$ in absence of regulation, and $0$ otherwise. Assuming random mating and no linkage disequilibrium (i.e.\ no correlation between $n$ and the genotype at the regulatory cluster),
 
@@ -270,6 +270,15 @@ This allows for a new equilibrium $E_4$:
 The equilibrium exists ($\hat n > 0$ and $\hat p > 0$) whenever $s < u(1+2u)$, i.e.\ the transposition rate must be substantially larger than the selection coefficient. 
 
 \begin{figure}
+\begin{adjustwidth}{-2in}{0in}
+\begin{center}
+	\includegraphics[width=15cm]{../figures/figD}
+\caption{\label{fig:figD} Dynamics of the copy number ($n$, left) and the cluster frequency ($p$, right) in the deleterious TE - deleterious cluster model. Top panels: influence of the selection coeffcient, bottom panels: influence of the number of clusters. Plain lines: predicted dynamics from the differential equations (eq.~\ref{eq:selps}), hyphenated lines: predicted equilibrium (eq.~\ref{eq:selspeq}), dots: simulations. }
+\end{center}\end{adjustwidth}
+\end{figure}
+
+
+\begin{figure}
 \begin{adjustwidth}{-1in}{0in}
 \begin{center}
 	\includegraphics[width=15cm]{../figures/figE}
@@ -286,6 +295,10 @@ A linear stability analysis (Appendix~\ref{app:selpseq}) shows that for the whol
 \caption{\label{fig:figG} Equilibrium stability for the deleterious TES - deleterious cluster model. The figure represents the real part of the first eigenvalue of the Jacobian matrix for two major parameters ($u$ and $s$), with $k=1$ and $\pi = 0.03$. The eigenvalue is negative for the whole parameter range, and is a complex number for most of the range (below the red line). The purple line delineates $s = u/(1+2u)$, beyond which selection is too strong to let the TE invade (white area). }
 \end{center}\end{adjustwidth}
 \end{figure}
+
+\subsection{Drift}
+
+
 
 
 \printbibliography
