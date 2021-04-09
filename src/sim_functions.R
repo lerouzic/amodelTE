@@ -9,7 +9,7 @@ global.default <- list(
 	piRNA.loci        = 1:30,
 	piRNA.prob        = 30/1000,
 	fitness.FUN       = function(n.sel)    exp(-n.sel*0.01),
-	regulation.FUN    = function(n.piRNA)  if (n.piRNA == 0) 1 else 0,
+	regulation.FUN    = function(n.piRNA, n)  if (n.piRNA == 0) 1 else 0,
 	u                 = 0.1,
 	G                 = 100,
 	summary.every     = 10,
@@ -108,7 +108,7 @@ reproduction.pop <- function(pop, global) {
 transposition.ind <- function(ind, global) {
 	n.piRNA <- n.piRNA.ind(ind, global)
 	n.tot <- n.tot.ind(ind, global)
-	transp.rate <- global$u * global$regulation.FUN(n.piRNA)
+	transp.rate <- global$u * global$regulation.FUN(n.piRNA, n.tot)
 	
 	piloc <- global$piRNA.loci
 	lpiloc <- length(piloc)

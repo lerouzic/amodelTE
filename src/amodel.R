@@ -33,7 +33,7 @@ amodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, Tmax=100) {
 }
 
 
-pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0) {
+pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=NA) {
 	if (p0 != 0) warning("Most models assume that p0=0.")
 	ss <- s*(1+2*u)
 	pp <- 1-(ss/u)^(1/2/k)
@@ -52,6 +52,7 @@ pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0) {
 							n = 0, 
 #~ 							p = 1 - ((1-pp)^(1-2*k) + (2*k-1)*u*pi*nn/k/ss)^(1/(1-2*k)) )
 							p = 1- ((u/ss)*(2*k-1)*pp +1) ^ (1/(1-2*k)) )
+#~ 							p = pp - sqrt(abs((1/k)*(ss/u)^(1/2/k)*(2/(1-2*k)*(ss/u)^(1/2/k) - pi*nn/k))) )
 						))
 			} else { #sp != 0
 				return(list(Eq=list(
@@ -86,7 +87,7 @@ jacob.dtdc <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, ...) {
 		  c(pi*ss/k, -2*nn*pi*u*(ss/u)^((2*k-1)/2/k) + (1-s)/(1-s*pp)^2 - 1))
 }
 
-simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/") {
+simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/", mean=TRUE) {
 	simpar <- list(
 		nb.loci           = 1000,
 		neutral.loci      = if (sp==0) 1:k else numeric(0), 
@@ -103,6 +104,9 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, N=10000, Tmax=1
 	# This tries to go around R lazy evaluation of closures ... what a mess
 	ffs <- paste0('function(n.sel) exp(-' ,eval(s), '*n.sel)')
 	simpar$fitness.FUN <-  eval(parse(text=ffs))
+	
+	ffr <- paste0('function(n.piRNA, n) (if (n.piRNA == 0) 1 else 0)/(1+', eval(r), '*n)')
+	simpar$regulation.FUN <- eval(parse(text=ffr))
 	
 	if (use.cache && is.null(cache.dir)) {
 		warning("Impossible to use the cache (no cache directory provided).")
@@ -129,9 +133,15 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, N=10000, Tmax=1
 	if (use.cache) {
 		saveRDS(simres, file.name)
 	}
-	ans <- list(
-		n=rowMeans(sapply(simres, function(i) i$n.tot.mean)),
-		p=rowMeans(sapply(simres, function(i) i$n.piRNA.mean))/2/k)
+	if (mean) {
+		ans <- list(
+			n=rowMeans(sapply(simres, function(i) i$n.tot.mean)),
+			p=rowMeans(sapply(simres, function(i) i$n.piRNA.mean))/2/k)
+	} else {
+		ans <- list(
+			n=sapply(simres, function(i) i$n.tot.mean),
+			p=sapply(simres, function(i) i$n.piRNA.mean)/2/k)
+	}
 	names(ans$n) <- names(ans$p) <- rownames(simres[[1]])
 	ans
 }
