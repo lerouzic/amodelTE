@@ -1,0 +1,63 @@
+source("../src/amodel.R")
+
+library(vioplot)
+
+model.neutral <- c(u=0.045, pi=0.03, s=0.00, k=1, sp=0.00, n0=1, p0=0)
+model.dtnc    <- c(u=0.05, pi=0.03, s=0.01, k=1, sp=0.00, n0=1, p0=0)
+model.dtdc    <- c(u=0.15, pi=0.03, s=0.01, k=1, sp=0.01, n0=1, p0=0)
+model.regul   <- c(u=0.17, pi=0.00, s=0.01, k=1, sp=0.00, n0=1, p0=0, r=0.45)
+
+use.cache <- TRUE
+
+mycol=c('Neutral'="gray", 'Del TEs - neutral clusters'="violet", 'Del TEs - del clusters'="green", 'Copy number regul'="darkblue")
+Nn <- c(10, 20, 50, 100, 200, 500, 1000)
+rep <- 100
+
+Tmax <- 100
+
+ss.neutral <- lapply(Nn, function(N) {
+	ans <- do.call(simmodel, c(as.list(model.neutral), list(N=N, Tmax=Tmax, rep=rep, use.cache=use.cache, mean=FALSE)))
+})
+
+ss.dtnc <- lapply(Nn, function(N) {
+	ans <- do.call(simmodel, c(as.list(model.dtnc), list(N=N, Tmax=Tmax, rep=rep, use.cache=use.cache, mean=FALSE)))
+})
+
+ss.dtdc <- lapply(Nn, function(N) {
+	ans <- do.call(simmodel, c(as.list(model.dtdc), list(N=N, Tmax=Tmax, rep=rep, use.cache=use.cache, mean=FALSE)))
+})
+
+ss.regul <- lapply(Nn, function(N) {
+	ans <- do.call(simmodel, c(as.list(model.regul), list(N=N, Tmax=Tmax, rep=rep, use.cache=use.cache, mean=FALSE)))
+})
+
+
+names(ss.neutral) <- names(ss.dtnc) <- names(ss.dtdc) <- names(ss.regul) <- as.character(Nn)
+
+ylim <- c(0, 80)
+
+ss.all <- unlist(lapply(seq_along(ss.neutral), function(i) c(ss.neutral[i], ss.dtnc[i], ss.dtdc[i], ss.regul[i])), recursive=FALSE) 
+
+pdf("figH1.pdf", height=4, width=12)
+
+vioplot(lapply(ss.all, function(x) x$n[nrow(x$n),]), xlab="Population size (N)", ylab="Copy number (n)", ylim=ylim, col=mycol, xaxt="n", at=1:(4*length(ss.neutral)) + rep(0:(length(ss.neutral)-1), each=4))
+axis(1, at=2.5+(0:(length(ss.neutral)-1))*5, label=as.character(Nn))
+legend("topright", lty=1, lwd=6, col=mycol, legend=names(mycol))
+abline(h=mean(ss.neutral[[length(Nn)]]$n[nrow(ss.neutral[[length(Nn)]]$n),]), col="darkgray", lty=3)
+
+dev.off()
+
+pdf("figH2.pdf", height=5, width=5)
+
+plot(Nn, sapply(ss.neutral, function(x) var(x$n[nrow(x$n),])/mean(x$n[nrow(x$n),])), ylim=c(0.02, 22), log="xy", xlab="Population size N", ylab=expression("Var("*bar(n)*")"/bar(n)), pch=19, col=mycol[1])
+points(Nn, sapply(ss.dtnc, function(x) var(x$n[nrow(x$n),])/mean(x$n[nrow(x$n),])), pch=19, col=mycol[2])
+points(Nn, sapply(ss.dtdc, function(x) var(x$n[nrow(x$n),])/mean(x$n[nrow(x$n),])), pch=19, col=mycol[3])
+points(Nn, sapply(ss.regul, function(x) var(x$n[nrow(x$n),])/mean(x$n[nrow(x$n),])), pch=19, col=mycol[4])
+
+vref <- var(ss.neutral[[1]]$n[nrow(ss.neutral[[1]]$n),])/mean(ss.neutral[[1]]$n[nrow(ss.neutral[[1]]$n),])
+
+lines(Nn, vref*Nn[1]/Nn, lty=2, col=mycol[1])
+
+legend("bottomleft", pch=19, col=mycol, legend=names(mycol), bty="n")
+
+dev.off()
