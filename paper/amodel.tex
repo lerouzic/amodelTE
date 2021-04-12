@@ -97,6 +97,9 @@
 
 \section*{Abstract}
 
+We provide analytical expressions for maximum and equilibrium copy numbers and cluster frequencies, and we characterized 
+
+
 \linenumbers
 
 \section{Introduction}
@@ -110,35 +113,20 @@ TEs spread in genomes by replicative transposition, which ensures both the genom
 If the strength of regulation increases with the copy number, the transposition rate is expected to drop in the course of the TE invasion up to the point where transposition stops. Nevertheless, the piwi regulation pathway displays unique features that may affect substantially the evolutionary dynamics of TE families: (i) it relies on a mutation-based mechanism, involving regulatory loci that may need several generations to appear (ii) the regulatory loci in the host genome segregate independently from the TE families and have their own evolutionary dynamics (the TE invades a genetically-heterogeneous populations, which are a mixture of permissive and repressive genetic backgrounds), and (iii) the regulation mechanism is irreversible (transposition does not occur again in low-copy number individuals). The consequences of these unique features on the TE invasion dynamics are not totally clear yet. Individual-based stochastic simulations have shown that (...  \cite{Kof19,KAZ18,CL10}). 
 
 
-\section{General setting}
+\section{Methods}
 
-The model tracks two variables: (i) the average copy number, and (ii) the frequency of piRNA regulatory sites.
+\subsection{Historical framework}
 
-\paragraph{Symbols} \mbox{} \\
-
-\begin{tabular}{cll}
-Symbol & Meaning & Typical value \\ \hline
-$N$ & Population size & $\infty$ \\
-$\bar n$ & Average number of copies per individual & $1 > \bar n > 1000$ \\
-$u_0$ & Maximal transposition rate & $u \leq 1$ \\
-$v$ & Deletion rate & $v < 10^{-4}$ \\
-$\pi$ & Proportion of new insertions in a piRNA region & $\pi \simeq 3\%$ \\
-\end{tabular}
-
-\paragraph {Model assumptions} The model assumes that genetic drif can be neglected. This implies not only that $N \rightarrow \infty$, but also that $\bar n \cdot N \rightarrow \infty$, which excludes the very beginning of a TE invasion after a horizontal transfer. 
-
-The model also assumes linkage equilibrium in a sexual, random mating population. This only holds if transposition and selection are not too strong. It also assumes that the genome is freely recombining; predictions are probably inaccurate when sex chromosomes are large compared to the genome size. 
-
-\paragraph {Historical models} The general setting dates back to Charlesworth \& Charlesworth 1983. 
+Model setting and notation traces back to \cite{CC83}, who proposed to track the average TE copy number $\bar n$ in a population through the difference equation:
 
 \begin{equation}
-\bar n_{t+1} = \bar n_t(u_n - v),
+\bar n_{t+1} = \bar n_t + \bar n_t(u - v),
 \end{equation}
 
+\noindent where $u$ is the transposition rate (more exactly, the amplification rate per copy and per generation), and $v$ the deletion rate. 
+In this neutral model, if $u$ is constant, the dynamics is exponential. If the transposition rate $u_n$ is regulated by the copy number ($u_0 > v$, $d u_n / d n < 0$), $\overline{u_n} \simeq u_{\bar n}$, and $\mathrm{lim} (u_n) < v$, with $u_{\hat n} = v$, then a stable equilibrium copy number $\hat n$ can be reached. 
 
-If $u_n$ is constant, the dynamics is exponential, but if $u_0 > v$, $d u_n / d n < 0$, $\overline{u_n} \simeq u_{\bar n}$, and $\mathrm{lim} (u_n) < v$, with $u_{\hat n} = v$, then an equilibrium can be reached at $n = \hat n$. 
-
-If TEs are deleterious ($w_n < w_0$), then individuals carrying more copies reproduces less, which decreases the average copy number every generation. The effect of selection can be accounted for using traditional quantitative genetics, considering the number of copies $n$ as a quantitative trait: $\Delta \bar n \simeq \mathrm{Var}(n) \mathrm d \log(w_n)/ \mathrm d n | \bar n$, where $\mathrm{Var}(n)$ is the variance in copy number in the population, and $\mathrm d \log(w_n)/ \mathrm d n | \bar n$  approximates the selection gradient on $n$. The approximation is better when the fitness function $w_n$ is smooth and the copy number $n$ is not close to 0. Assuming random mating and no linkage disequilibrium, $n$ is approximately Poisson-distributed in the population, and $\mathrm{Var}(n) \simeq \bar n$. 
+However, in most organisms, TEs are probably not neutral. If TEs are deleterious, fitness $w$ decreases with the copy number ($w_n < w_0$). As a consequence, individuals carrying more copies reproduces less, which decreases the average copy number every generation. The effect of selection can be accounted for using traditional quantitative genetics, considering the number of copies $n$ as a quantitative trait: $\Delta \bar n \simeq \mathrm{Var}(n) \mathrm d \log(w_n)/ \mathrm d n | \bar n$, where $\mathrm{Var}(n)$ is the variance in copy number in the population, and $\mathrm d \log(w_n)/ \mathrm d n | \bar n$  approximates the selection gradient on $n$. The approximation is better when the fitness function $w_n$ is smooth and the copy number $n$ is not close to 0. Assuming random mating and no linkage disequilibrium, $n$ is approximately Poisson-distributed in the population, and $\mathrm{Var}(n) \simeq \bar n$. 
 
 \cite{CC83} propose to add up the effects of transposition and selection to approximate the variation in copy number across generations:
 
@@ -147,6 +135,10 @@ If TEs are deleterious ($w_n < w_0$), then individuals carrying more copies repr
 \end{equation}
 
 Equilibrium is reached when $\bar n_{t+1} = \bar n_t = \hat n$, which can be computed when the fitness function $w_n$ is known. 
+
+\subsection{Numerical methods}
+
+Model dynamics and data analysis was performed with R version 4.0 \citep{R20}. Model analysis was performed with packages deSolve \citep{SPS10}. 
 
 
 \section{Results}
@@ -296,9 +288,37 @@ A linear stability analysis (Appendix~\ref{app:selpseq}) shows that for the whol
 \end{center}\end{adjustwidth}
 \end{figure}
 
-\subsection{Drift}
+\subsection{Genetic drift}
+
+The models described above assume infinite population sizes, which may not hold for low-census species (typically, mammals) and for laboratory (experimental evolution) populations. We assessed the influence of population size on the copy number with numerical simulations, comparing the neutral model, the deleterious TE - neutral cluster model, and the deleterious TE - deleterious cluster model with a "classical" copy-number regulation model in which $u_n = u_0/(1+kn)$. Since the deleterious TE - neutral cluster model does not allow for an equilibrium, comparisons had to be performed before the stabilization of the copy number (arbitrarily, at T=100 generations). Models were parameterized such that the copy number $n$ was approximately the same after 100 generations. Drift affects piRNA models substantially more than copy number regulation, the variance of all trap models being approximately one order of magnitude larger (Figure~\ref{fig:figH2}). The neutral trap model appears to be slightly more sensitive to drift. Consistently with population genetics theory, the variance across simulation replicates decreased with $1/N$ for all models. 
+
+\begin{figure}
+\begin{adjustwidth}{0in}{0in}
+\begin{center}
+	\includegraphics[width=5cm]{../figures/figH2}
+\caption{\label{fig:figH2} Variance in the average copy number (relative to the average copy number) at generation 100 among replicated simulations for various population sizes. Four models are displayed: neutral trap model, Deleterious TE - neutral clusters, Deleterious TE - deleterious cluster, and copy number regulation. The theoretically-expected decrease in variance (in $1/N$) is illustrated for the neutral piRNA model. }
+\end{center}\end{adjustwidth}
+\end{figure}
+
+The standard population genetics theory predicts that selection is less effective at eliminating slightly deleterious alleles. Assuming that TE copies are deleterious, they should be eliminated faster in large populations compared to small ones. Although this mechanism has been proposed to explain the accumulation of junk DNA (including TE copies) in multicellular eukaryotes \citep{LC03}, little is known about how the equlibrium copy number of an active TE family is expected to be affected by drift even in the simplest scenarios \citep{CC83}. Yet, informal models suggest that drift may have a limited effect, as copy number equilibria rely on the assumption that evolutionary forces that limit TE amplification (regulation and/or selection) increase in intensity when the copy number increases. Thus, when drift pushes the average copy number up or down, TE amplification is expected to be less or more effective respectively, which compensates the random deviation. Simulations show that, whatever the model, the copy number is indeed slightly higher in small populations ($N < 100$) when the model involves selection, but this effect never exceeds 20\% of the total copy number (Figure~\ref{fig:figH1}). Overall, drift has a very limited impact on the copy number. 
+
+\begin{figure}
+\begin{adjustwidth}{-1in}{0in}
+\begin{center}
+	\includegraphics[width=15cm]{../figures/figH1}
+\caption{\label{fig:figH1} Distribution of the average copy number $\bar n$ among 1000 replicates in different models, with various population sizes. Models were parameterized so that they achieve very similar average copy numbers ($\bar n \sim 19$) in large populations (horizontal dotted line): $s=0.01$ for all models (except the neutral model), $k=1$ cluster and $\pi =0.03$ in all trap models. Transposition rates were: $u=0.045$ for the neutral model, $u=0.05$ for the Deleterious TE - neutral cluster model, $u=0.15$ for the Deleterious TE - Deleterious cluster model, and $u_n=0.17/(1+0.45 n)$ for the regulation model. }
+\end{center}\end{adjustwidth}
+\end{figure}
 
 
+\section{Discussion}
+
+The formalization of TE regulation by pi-RNA clusters (the "trap model") made it possible to derive a series of non-intuitive results, and evidence how trap regulation differs from traditional (copy-number based) regulation models. Among the most striking results: (i) in absence of selection (neutral trap model), the equilibrium copy number does not depend on the transposition rate, (ii) the efficiency of regulation increases with the size of clusters and decreases with the number of clusters, (iii) deleterious TEs can always invade when the transposition rate is larger than the selection coefficient, but the TE family can persist only if copies inserted in clusters are deleterious as well. Equilibria are always stable. Pi-RNA regulation being a mutational process, the TE copy number is substiantially more sensitive to genetic drift than other regulation models. 
+
+
+\subsection{Model approximations}
+
+\subsection{Pi-RNA clusters and recombination}
 
 
 \printbibliography
