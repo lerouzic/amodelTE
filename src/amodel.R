@@ -69,7 +69,7 @@ num.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0) {
 		
 	init <- setNames(c(n0, p0), nm=c("n","p"))
 	params <- setNames(c(u=u, pi=pi, k=k, s=s, sp=sp), nm=c("u","pi","k","s","sp"))
-	times <- seq(0, 100, 1)
+	times <- seq(0, 1000, 1)
 
 	oo <- ode(y=init, times=times, func=model, parms=params)
 	eq <- findEquilibrium(model, y0=oo[nrow(oo),-1], parameters=params, state.names=names(init), summary=FALSE)
