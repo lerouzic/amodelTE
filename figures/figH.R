@@ -2,10 +2,10 @@ source("../src/amodel.R")
 
 library(vioplot)
 
-model.neutral <- c(u=0.045, pi=0.03, s=0.00, k=1, sp=0.00, n0=1, p0=0)
-model.dtnc    <- c(u=0.05, pi=0.03, s=0.01, k=1, sp=0.00, n0=1, p0=0)
-model.dtdc    <- c(u=0.15, pi=0.03, s=0.01, k=1, sp=0.01, n0=1, p0=0)
-model.regul   <- c(u=0.17, pi=0.00, s=0.01, k=1, sp=0.00, n0=1, p0=0, r=0.45)
+model.neutral <- c(u=0.045, pi=0.03, s=0.00, k=2, sp=0.00, n0=1, p0=0)
+model.dtnc    <- c(u=0.13, pi=0.03, s=0.01, k=2, sp=0.00, n0=1, p0=0)
+model.dtdc    <- c(u=0.07, pi=0.03, s=0.01, k=2, sp=0.01, n0=1, p0=0)
+model.regul   <- c(u=0.17, pi=0.00, s=0.01, k=2, sp=0.00, n0=1, p0=0, r=0.44)
 
 use.cache <- TRUE
 
@@ -59,5 +59,30 @@ vref <- var(ss.neutral[[1]]$n[nrow(ss.neutral[[1]]$n),])/mean(ss.neutral[[1]]$n[
 lines(Nn, vref*Nn[1]/Nn, lty=2, col=mycol[1])
 
 legend("bottomleft", pch=19, col=mycol, legend=names(mycol), bty="n")
+
+dev.off()
+
+
+num.plot  <- 20
+N.plot    <- 100
+Tmax.plot <- 400
+
+model.dtdc.plot  <- c(u=0.07, pi=0.03, s=0.01, k=2, sp=0.01, n0=1, p0=0)
+model.regul.plot <- c(u=0.07, pi=0.00, s=0.01, k=2, sp=0.00, n0=1, p0=0, r=0.44)
+
+ss.dtdc.plot  <-  do.call(simmodel, c(as.list(model.dtdc.plot),  list(N=N.plot, Tmax=Tmax.plot, rep=num.plot, use.cache=use.cache, mean=FALSE)))
+ss.regul.plot <-  do.call(simmodel, c(as.list(model.regul.plot), list(N=N.plot, Tmax=Tmax.plot, rep=num.plot, use.cache=use.cache, mean=FALSE)))
+
+pdf("figH3.pdf", height=5, width=5)
+
+plot(NULL, xlim=c(0,Tmax.plot), ylim=c(0, 50), xlab="Generations", ylab=expression("Average copy number "*bar(n)))
+
+for (i in seq_len(num.plot)) {
+	lines(ss.dtdc.plot$n[,i], lty=1, col=mycol[3])
+	lines(ss.regul.plot$n[,i], lty=1, col=mycol[4])
+}
+
+legend("topleft", lty=1, col=mycol[3:4], legend=names(mycol)[3:4])
+
 
 dev.off()
