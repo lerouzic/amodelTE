@@ -1,5 +1,8 @@
 source("../src/sim_functions.R")
 
+simulator.default = "Rsimulator"
+simulator.default = "Simulicron"
+
 cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n) {
 	ans <- c(n0, rep(NA, Tmax))
 	for (t in 1:Tmax) {
@@ -86,7 +89,7 @@ jacob.dtdc <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, ...) {
 		  c(pi*ss/k, -2*nn*pi*u*(ss/u)^((2*k-1)/2/k) + (1-s)/(1-s*pp)^2 - 1))
 }
 
-simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/", mean=TRUE) {
+simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/", mean=TRUE, simulator=simulator.default) {
 	simpar <- list(
 		nb.loci           = 1000,
 		neutral.loci      = if (sp==0) 1:k else numeric(0), 
@@ -97,7 +100,8 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, T
 		N                 = N,
 		rep               = rep,
 		summary.every     = 1,
-		init.TE.ind       = n0
+		init.TE.ind       = n0,
+		simulator         = simulator
 	)
 	simpar$regulation.FUN <- function(n.piRNA) if (n.piRNA == 0) 1 else 0
 	# This tries to go around R lazy evaluation of closures ... what a mess
@@ -127,7 +131,7 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, T
 	if (use.cache && file.exists(file.name)) {
 		simres <- readRDS(file.name)
 	} else {
-		simres <- run.simul(simpar)
+		simres <- run.simul(simpar, simulator=simulator)
 	}
 	if (use.cache) {
 		saveRDS(simres, file.name)
@@ -147,7 +151,7 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, T
 
 plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FALSE, legend=TRUE, Tmax=100, N=10000, rep=1, nb.simpt=21, use.cache=TRUE,
 	xlab="Generations", ylab=if(what=="n") "Copy number" else "Cluster frequency", xlim=c(0,Tmax), ylim=NA,
-	legend.pos="topleft", ...) {
+	legend.pos="topleft", simulator=simulator.default, ...) {
 
 	dyn.res <- lapply(model.par, function(mm) { 
 		pp <- model.default
@@ -167,7 +171,7 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 		sim.res <- lapply(model.par, function(mm) {
 			pp <- model.default
 			pp[names(mm)] <- mm				
-			do.call(simmodel, c(as.list(pp), list(N=N, Tmax=Tmax, rep=rep, use.cache=use.cache )))
+			do.call(simmodel, c(as.list(pp), list(N=N, Tmax=Tmax, rep=rep, use.cache=use.cache, simulator=simulator)))
 		})
 	}
 	

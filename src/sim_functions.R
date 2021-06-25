@@ -15,7 +15,8 @@ global.default <- list(
 	summary.every     = 10,
 	N                 = 1000,
 	rep               = 10,
-	init.TE.ind       = 1
+	init.TE.ind       = 1,
+	simulator         = NA
 )
 
 mcsapply <- function (X, FUN, ..., simplify = TRUE, USE.NAMES = TRUE, mc.cores=1) 
@@ -174,7 +175,7 @@ summary.pop <- function(pop, global) {
 	ans
 }
 
-run.one.simul <- function(global) {
+Rsimulator <- function(global) {
 	pop <- init.pop(global)
 	ans <- list('0'=data.frame(summary.pop(pop, global)))
 	for (gg in 1:global$G) {
@@ -187,7 +188,36 @@ run.one.simul <- function(global) {
 	do.call(rbind, ans)
 }
 
-run.simul <- function(user.global=list()) {
+Simulicron <- function(global) {
+	simulicron.path <- "../../Simulicron/Project_1C/Arnaud.py"
+	
+	simID <- tempfile()
+	# translation from parameter names in global to Simulicron parameters
+	simulicron.param <- list(
+		generations      = global$G, 
+		individuals       = global$N, 
+		selectionPenalty = log(global$fitness.FUN(1)), #Assuming fitness.FUN(0) = 1
+		tau              = 1,
+		ExcisionRate     = global$u, 
+		FrequencyOfInsertion = 1,
+		Chromosomes      = 2,
+		RecombinationRate= 0.49,
+		NumberOfInsertions= 1, # Double check this
+		piRNASelection   = if(length(global$neutral.loci) > 0) log(global$fitness.FUN(1)) else 0,
+		FileName         = simID
+	)
+	
+	command <- paste0("python3 ", simulicron.path, " ", paste(names(simulicron.param), simulicron.param, sep="=", collapse=" "))
+	
+	system(command, ignore.stdout=TRUE)
+		
+	dd <- read.table(simID, header=FALSE)
+	ans <- data.frame(n.tot.mean=dd[,1], n.piRNA.mean=dd[,2])
+	ans
+}
+
+
+run.simul <- function(user.global=list(), simulator=c("Rsimulator", "Simulicron")[1]) {
 	global <- global.default
 	valid.user.global <- names(user.global)[names(user.global) %in% names(global)]
 	if (length(valid.user.global) != length(user.global)) {
@@ -197,5 +227,12 @@ run.simul <- function(user.global=list()) {
 	if (is.na(global$mc.cores.internal))
 		global$mc.cores.internal <- max(1, global$mc.cores %/% global$rep)
 	global$notpiRNA.loci <- (1:global$nb.loci)[! 1:global$nb.loci %in% global$piRNA.loci]
-	mclapply(1:global$rep, function(i) run.one.simul(global=global), mc.cores=global$mc.cores)
+	simFUN <- if (simulator == "Rsimulator") {
+			Rsimulator
+		} else if (simulator == "Simulicron") {
+			Simulicron
+		} else {
+			stop("Unknown simulator: ", simulator)
+		}
+	mclapply(1:global$rep, function(i) simFUN(global=global), mc.cores=global$mc.cores)
 }
