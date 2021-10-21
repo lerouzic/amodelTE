@@ -124,16 +124,15 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, T
 		dir.create(cache.dir) 
 	}
 	file.name <- if (use.cache) 
-					file.path(cache.dir, paste0(digest(capture.output(dput(simpar))), ".rds")) 
+					file.path(cache.dir, paste0(paste(digest(capture.output(dput(simpar))), collapse=""), ".rds")) 
 				else 
 					NULL
-	
 	if (use.cache && file.exists(file.name)) {
 		simres <- readRDS(file.name)
 	} else {
 		simres <- run.simul(simpar, simulator=simulator)
 	}
-	if (use.cache) {
+	if (use.cache && !file.exists(file.name)) {
 		saveRDS(simres, file.name)
 	}
 	if (mean) {
