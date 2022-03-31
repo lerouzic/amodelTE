@@ -137,12 +137,12 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, T
 	}
 	if (mean) {
 		ans <- list(
-			n=rowMeans(sapply(simres, function(i) i$n.tot.mean)),
-			p=rowMeans(sapply(simres, function(i) i$n.piRNA.mean))/2/k)
+			n=rowMeans(sapply(simres, function(i) c(i$n.tot.mean, rep(0, Tmax+1-nrow(i))))),
+			p=rowMeans(sapply(simres, function(i) c(i$n.piRNA.mean, rep(0, Tmax+1-nrow(i))))/2/k))
 	} else {
 		ans <- list(
-			n=sapply(simres, function(i) i$n.tot.mean),
-			p=sapply(simres, function(i) i$n.piRNA.mean)/2/k)
+			n=sapply(simres, function(i) c(i$n.tot.mean, rep(0, Tmax+1-nrow(i)))),
+			p=sapply(simres, function(i) c(i$n.piRNA.mean, rep(0, Tmax+1-nrow(i)))/2/k))
 	}
 	names(ans$n) <- names(ans$p) <- rownames(simres[[1]])
 	ans
