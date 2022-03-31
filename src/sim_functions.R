@@ -200,15 +200,17 @@ Simulicron <- function(global) {
 		tau              = 1,
 		ExcisionRate     = global$u, 
 		FrequencyOfInsertion = 1,
-		Chromosomes      = 2,
-		RecombinationRate= 0.49,
+		Chromosomes      = 10,
+		RecombinationRate= 0.499,
 		NumberOfInsertions= 1, # Double check this
+		piPercentage      = 100*global$piRNA.prob,
+		numberOfPiRNA     = length(global$piRNA.loci),
 		piRNASelection   = if(length(global$neutral.loci) > 0) log(global$fitness.FUN(1)) else 0,
 		FileName         = simID
 	)
 	
 	command <- paste0("python3 ", simulicron.path, " ", paste(names(simulicron.param), simulicron.param, sep="=", collapse=" "))
-	
+		
 	system(command, ignore.stdout=TRUE)
 		
 	dd <- read.table(simID, header=FALSE)
