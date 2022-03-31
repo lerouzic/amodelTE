@@ -195,7 +195,8 @@ Simulicron <- function(global) {
 	# translation from parameter names in global to Simulicron parameters
 	simulicron.param <- list(
 		generations      = global$G, 
-		individuals       = global$N, 
+		individuals      = global$N, 
+		loci             = global$nb.loci,
 		selectionPenalty = log(global$fitness.FUN(1)), #Assuming fitness.FUN(0) = 1
 		tau              = 1,
 		ExcisionRate     = global$u, 
