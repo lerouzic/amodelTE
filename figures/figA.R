@@ -9,8 +9,12 @@ lty.eq <- 2
 
 col <- 1:10
 
-N.sim <- 10000
-rep.sim <- 1
+#~ N.sim <- 10000
+#~ rep.sim <- 1
+
+N.sim <- 100
+rep.sim <- 30
+
 Tmax <- 300
 
 use.cache=TRUE
