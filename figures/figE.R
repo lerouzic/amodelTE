@@ -30,52 +30,59 @@ u.eq.p <- lapply(k.expl, function(k) vapply(u.expl, function(u) {pp <- param.ref
 pi.eq.n <- lapply(k.expl, function(k) vapply(pi.expl, function(pi) {pp <- param.ref; pp["k"] <- k; pp["pi"] <- pi; eqn(pp, init) }, numeric(1)))
 pi.eq.p <- lapply(k.expl, function(k) vapply(pi.expl, function(pi) {pp <- param.ref; pp["k"] <- k; pp["pi"] <- pi; eqp(pp, init) }, numeric(1)))
 
-pdf("figE.pdf", width=15, height=5)
-layout(rbind(1:3))
-par(cex=1, mar=c(5,4,1,4))
+ylim.n <- c(0,25)
+ylim.p <- c(0,1)
 
-plot(NULL, xlim=range(s.expl), ylim=c(0, 25), xlab="s", ylab="")
+pdf("figE.pdf", width=9, height=6)
+layout(matrix(1:6, ncol=3))
+par(cex=1, mar=c(1,1,1,1), oma=c(5,4,0,0))
+
+plot(NULL, xlim=range(s.expl), ylim=ylim.n, xlab="", ylab="", xaxt="n", yaxt="n")
 for (ki in seq_along(k.expl)) {
 	lines(s.expl, s.eq.n[[ki]], lty=ki, col=col["n"])
 }
-par(new=TRUE)
-plot(NULL, xlim=range(s.expl), ylim=c(0,1), xlab="", ylab="",  axes=FALSE)
+legend("topright", lty=seq_along(k.expl), col="darkgray", paste0("k = ", k.expl))
+mtext(expression("Copy number ("*hat(n)*")"), 2, line=3, xpd=NA)
+axis(1, labels=FALSE)
+axis(2, xpd=NA)
+
+plot(NULL, xlim=range(s.expl), ylim=c(0,1), xlab="", ylab="", xaxt="n", yaxt="n")
 for (ki in seq_along(k.expl)) {
 	lines(s.expl, s.eq.p[[ki]], lty=ki, col=col["p"])
 }
-#~ axis(1, col=col["n"], col.axis=col["n"])
-mtext(expression(hat(n)), side=2, line=mtext.line, col=col["n"], las=2)
-axis(4, col=col["p"], col.axis=col["p"])
-mtext(expression(hat(p)), side=4, line=mtext.line, col=col["p"], las=2)
+mtext(expression("Cluster frequency ("*hat(p)*")"), 2, line=3, xpd=NA)
+mtext("Selection coefficient (s)", 1, line=3, xpd=NA)
+axis(1, xpd=NA)
+axis(2, xpd=NA)
 
-legend("topright", lty=seq_along(k.expl), col="darkgray", paste0("k = ", k.expl))
-
-plot(NULL, xlim=range(u.expl), ylim=c(0, 25), xlab="u", ylab="")
+plot(NULL, xlim=range(u.expl), ylim=ylim.n, xlab="", ylab="", xaxt="n", yaxt="n")
 for (ki in seq_along(k.expl)) {
 	lines(u.expl, u.eq.n[[ki]], lty=ki, col=col["n"])
 }
-par(new=TRUE)
-plot(NULL, xlim=range(u.expl), ylim=c(0,1), xlab="", ylab="", axes=FALSE)
+axis(1, labels=FALSE)
+axis(2, labels=FALSE)
+
+plot(NULL, xlim=range(u.expl), ylim=ylim.p, xlab="", ylab="", xaxt="n", yaxt="n")
 for (ki in seq_along(k.expl)) {
 	lines(u.expl, u.eq.p[[ki]], lty=ki, col=col["p"])
 }
-#~ axis(1, col=col["n"], col.axis=col["n"])
-mtext(expression(hat(n)), side=2, line=mtext.line, col=col["n"], las=2)
-axis(4, col=col["p"], col.axis=col["p"])
-mtext(expression(hat(p)), side=4, line=mtext.line, col=col["p"], las=2)
+mtext("Transposition rate (u)", 1, line=3, xpd=NA)
+axis(1, xpd=NA)
+axis(2, labels=FALSE)
 
-plot(NULL, xlim=range(pi.expl), ylim=c(0, 25), xlab=expression(pi), ylab="")
+plot(NULL, xlim=range(pi.expl), ylim=ylim.n, xlab="", ylab="", xaxt="n", yaxt="n")
 for (ki in seq_along(k.expl)) {
 	lines(pi.expl, pi.eq.n[[ki]], lty=ki, col=col["n"])
 }
-par(new=TRUE)
-plot(NULL, xlim=range(pi.expl), ylim=c(0,1), xlab="", ylab="", axes=FALSE)
+axis(1, labels=FALSE)
+axis(2, labels=FALSE)
+
+plot(NULL, xlim=range(pi.expl), ylim=ylim.p, xlab="", ylab="", xaxt="n", yaxt="n")
 for (ki in seq_along(k.expl)) {
 	lines(pi.expl, pi.eq.p[[ki]], lty=ki, col=col["p"])
 }
-#~ axis(1, col=col["n"], col.axis=col["n"])
-mtext(expression(hat(n)), side=2, line=mtext.line, col=col["n"], las=2)
-axis(4, col=col["p"], col.axis=col["p"])
-mtext(expression(hat(p)), side=4, line=mtext.line, col=col["p"], las=2)
+mtext(expression("Cluster size ("*pi*")"), 1, line=3, xpd=NA)
+axis(1, xpd=NA)
+axis(2, labels=FALSE)
 
 dev.off()
