@@ -3,7 +3,6 @@
 source("../src/amodel.R")
 
 # deleterious TEs - deleterious clusters
-pdf("figD.pdf", width=8, height=8)
 
 lty.max<- 3
 lty.eq <- 2
@@ -15,7 +14,7 @@ rep.sim <- 1
 Tmax <- 300
 
 use.cache=TRUE
-pdf("figD.pdf", width=8, height=6)
+pdf("fig4.pdf", width=8, height=6)
 
 layout(rbind(1:2, 3:4))
 par(mar=c(1,4,1,1), oma=c(3,0,0,0))

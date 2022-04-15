@@ -28,7 +28,7 @@ su.2D[eqp.2D <= 0] <- NA
 su.2D[eqp.2D > 1] <- NA # never happens
 
 
-pdf("figG.pdf", width=5, height=5)
+pdf("figSA2.pdf", width=5, height=5)
 
 image(x=u.expl, y=s.expl, z=Re(t(su.2D)), col = hcl.colors(1024, "viridis", rev = FALSE), xlab="u", ylab="s")
 contour(x=u.expl, y=s.expl, z=Re(t(su.2D)), add=TRUE, labcex=0.8)

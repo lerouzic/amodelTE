@@ -28,7 +28,7 @@ u.eq.p.n <- lapply(k.expl, function(k) vapply(u.expl, function(u) {pp <- param.r
 
 
 
-pdf("figC2.pdf", width=8, height=3.5)
+pdf("fig3.pdf", width=8, height=3.5)
 layout(t(1:2))
 par(mar=c(5, 4.5, 1, 1))
 plot(NULL, xlim=range(s.expl), ylim=c(0, 1), xlab="s", ylab=expression(hat(p)))

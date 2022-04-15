@@ -38,16 +38,9 @@ ylim <- c(0, 80)
 
 ss.all <- unlist(lapply(seq_along(ss.neutral), function(i) c(ss.neutral[i], ss.dtnc[i], ss.dtdc[i], ss.regul[i])), recursive=FALSE) 
 
-pdf("figH1.pdf", height=4, width=12)
 
-vioplot(lapply(ss.all, function(x) x$n[nrow(x$n),]), xlab="Population size (N)", ylab="Copy number (n)", ylim=ylim, col=mycol, xaxt="n", at=1:(4*length(ss.neutral)) + rep(0:(length(ss.neutral)-1), each=4))
-axis(1, at=2.5+(0:(length(ss.neutral)-1))*5, label=as.character(Nn))
-legend("topright", lty=1, lwd=6, col=mycol, legend=names(mycol))
-abline(h=mean(ss.neutral[[length(Nn)]]$n[nrow(ss.neutral[[length(Nn)]]$n),]), col="darkgray", lty=3)
 
-dev.off()
-
-pdf("figH2.pdf", height=5, width=5)
+pdf("fig6A.pdf", height=5, width=5)
 
 plot(Nn, sapply(ss.neutral, function(x) var(x$n[nrow(x$n),])/mean(x$n[nrow(x$n),])), ylim=c(0.02, 22), log="xy", xlab="Population size N", ylab=expression("Var("*bar(n)*")"/bar(n)), pch=19, col=mycol[1])
 points(Nn, sapply(ss.dtnc, function(x) var(x$n[nrow(x$n),])/mean(x$n[nrow(x$n),])), pch=19, col=mycol[2])
@@ -73,7 +66,7 @@ model.regul.plot <- c(u=0.07, pi=0.00, s=0.01, k=2, sp=0.00, n0=1, p0=0, r=0.44)
 ss.dtdc.plot  <-  do.call(simmodel, c(as.list(model.dtdc.plot),  list(N=N.plot, Tmax=Tmax.plot, rep=num.plot, use.cache=use.cache, mean=FALSE)))
 ss.regul.plot <-  do.call(simmodel, c(as.list(model.regul.plot), list(N=N.plot, Tmax=Tmax.plot, rep=num.plot, use.cache=use.cache, mean=FALSE)))
 
-pdf("figH3.pdf", height=5, width=5)
+pdf("fig6B.pdf", height=5, width=5)
 
 plot(NULL, xlim=c(0,Tmax.plot), ylim=c(0, 50), xlab="Generations", ylab=expression("Average copy number "*bar(n)))
 
@@ -84,5 +77,14 @@ for (i in seq_len(num.plot)) {
 
 legend("topleft", lty=1, col=mycol[3:4], legend=names(mycol)[3:4])
 
+
+dev.off()
+
+pdf("figSB2.pdf", height=4, width=12)
+
+vioplot(lapply(ss.all, function(x) x$n[nrow(x$n),]), xlab="Population size (N)", ylab="Copy number (n)", ylim=ylim, col=mycol, xaxt="n", at=1:(4*length(ss.neutral)) + rep(0:(length(ss.neutral)-1), each=4))
+axis(1, at=2.5+(0:(length(ss.neutral)-1))*5, label=as.character(Nn))
+legend("topright", lty=1, lwd=6, col=mycol, legend=names(mycol))
+abline(h=mean(ss.neutral[[length(Nn)]]$n[nrow(ss.neutral[[length(Nn)]]$n),]), col="darkgray", lty=3)
 
 dev.off()

@@ -33,7 +33,7 @@ pi.eq.p <- lapply(k.expl, function(k) vapply(pi.expl, function(pi) {pp <- param.
 ylim.n <- c(0,25)
 ylim.p <- c(0,1)
 
-pdf("figE.pdf", width=9, height=6)
+pdf("fig5.pdf", width=9, height=6)
 layout(matrix(1:6, ncol=3))
 par(cex=1, mar=c(1,1,1,1), oma=c(5,4,0,0))
 
