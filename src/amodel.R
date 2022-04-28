@@ -15,7 +15,7 @@ cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n
 model <- function(t, y, parms) {
 	with(as.list(c(y, parms)), {
 		dn <- n*u*(1-p)^(2*k) - n*s*(1+2*u)
-		dp <- n*u*pi/k*(1-p)^(2*k) - sp*p*(1-p)/(1-sp*p)
+		dp <- n*u*pi/2/k*(1-p)^(2*k) - sp*p*(1-p)/(1-sp*p)
 		list(c(dn, dp))
 	})
 }
@@ -43,11 +43,11 @@ pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=NA) {
 	if (pp < 0) pp <- 0
 	if (s==0) {
 		return(list(Eq=list(
-						n=n0+k/pi,
+						n=n0+2*k/pi,
 						p=1)))
 	} else { #s != 0
 		if (sp == 0) {
-			nn <- n0 + (k/pi)*(1- (2*k*(ss/u)^(1/2/k) - ss/u)/(2*k-1))
+			nn <- n0 + (2*k/pi)*(1- (2*k*(ss/u)^(1/2/k) - ss/u)/(2*k-1))
 			return(list(Max=list(
 							n = nn,
 							p = pp),
@@ -87,7 +87,7 @@ jacob.dtdc <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, ...) {
 	nn <- k*s*pp*(ss/u)^(1/2/k)/pi/ss/(1-s*pp)
 	rbind(
 		  c(0,       -2*k*nn*u*(ss/u)^((2*k-1)/2/k)),
-		  c(pi*ss/k, -2*nn*pi*u*(ss/u)^((2*k-1)/2/k) + (1-s)/(1-s*pp)^2 - 1))
+		  c(pi*ss/2/k, -nn*pi*u*(ss/u)^((2*k-1)/2/k) + (1-s)/(1-s*pp)^2 - 1))
 }
 
 simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/", mean=TRUE, simulator=simulator.default) {
