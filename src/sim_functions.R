@@ -116,7 +116,7 @@ transposition.ind <- function(ind, global) {
 	nopiloc <- global$notpiRNA.loci
 	lnopiloc <- length(nopiloc)
 	
-	new.insertions.clust <- rpois(2, global$piRNA.prob*n.tot*transp.rate)
+	new.insertions.clust <- rpois(2, global$piRNA.prob*n.tot*transp.rate/2)
 	new.insertions.clust[new.insertions.clust > lpiloc] <- lpiloc
 	new.insertions       <- rpois(2, (1-global$piRNA.prob)*n.tot*transp.rate/2)
 	new.insertions[new.insertions > lnopiloc] <- lnopiloc
@@ -201,20 +201,22 @@ Simulicron <- function(global) {
 		tau              = 1,
 		ExcisionRate     = global$u, 
 		FrequencyOfInsertion = 1,
-		Chromosomes      = 10,
+		Chromosomes      = 1,
 		RecombinationRate= 0.499,
-		NumberOfInsertions= 1, # Double check this
+		NumberOfInsertions= global$init.TE.ind, # Double check this
 		piPercentage      = 100*global$piRNA.prob,
 		numberOfPiRNA     = length(global$piRNA.loci),
-		piRNASelection   = if(length(global$neutral.loci) > 0) log(global$fitness.FUN(1)) else 0,
+		piRNASelection   = "false", #if(length(global$neutral.loci) > 0) log(global$fitness.FUN(1)) else 0,
 		FileName         = simID
 	)
 	
 	command <- paste0("python3 ", simulicron.path, " ", paste(names(simulicron.param), simulicron.param, sep="=", collapse=" "))
-		
+			
 	system(command, ignore.stdout=TRUE)
 		
 	dd <- read.table(simID, header=FALSE)
+	unlink(simID)
+	
 	ans <- data.frame(n.tot.mean=dd[,1], n.piRNA.mean=dd[,2])
 	ans
 }

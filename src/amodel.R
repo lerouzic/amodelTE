@@ -1,7 +1,8 @@
 source("../src/sim_functions.R")
 
-simulator.default = "Rsimulator"
 simulator.default = "Simulicron"
+#~ simulator.default = "Rsimulator"
+
 
 cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n) {
 	ans <- c(n0, rep(NA, Tmax))
@@ -93,7 +94,7 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, T
 	simpar <- list(
 		nb.loci           = 1000,
 		neutral.loci      = if (sp==0) 1:k else numeric(0), 
-		piRNA.loci        = 1:k,
+		piRNA.loci        = seq_len(k),
 		piRNA.prob        = pi,
 		u                 = u,
 		G                 = Tmax,
