@@ -9,8 +9,8 @@ lty.eq <- 2
 
 col <- 1:10
 
-N.sim <- 10000
-rep.sim <- 1
+N.sim <- 1000
+rep.sim <- 20
 Tmax <- 300
 
 use.cache=TRUE
@@ -22,6 +22,7 @@ par(mar=c(1,4,1,1), oma=c(3,0,0,0))
 model.default <- c(u=0.1, pi=0.03, s=0.01, k=1, sp=0.01, n0=1, p0=0)
 
 model.par.s <- list(c(s=0, sp=0), c(s=0.01, sp=0.01), c(s=0.02, sp=0.02))
+
 
 plot.model.dyn(model.default, model.par.s, what="n", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=use.cache, xlab="", xaxt="n")
 axis(1, labels=FALSE)

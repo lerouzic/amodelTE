@@ -12,8 +12,8 @@ col <- 1:10
 #~ N.sim <- 10000
 #~ rep.sim <- 1
 
-N.sim <- 100
-rep.sim <- 30
+N.sim <- 1000
+rep.sim <- 20
 
 Tmax <- 300
 
@@ -30,7 +30,7 @@ model.par.u <- list(c(u=0.2), c(u=0.1), c(u=0.05))
 
 plot.model.dyn(model.default, model.par.u, what="n", pred=TRUE, sim=TRUE, legend=TRUE, legend.pos="bottomright", Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=use.cache, xlab="", xaxt="n")
 axis(1, labels=FALSE)
-text(10, 36, expression(hat(n)))
+text(10, 72, expression(hat(n)))
 
 plot.model.dyn(model.default, model.par.u, what="p", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE, xlab="", xaxt="n")
 axis(1, labels=FALSE)
@@ -41,7 +41,7 @@ model.par.k <- list(c(k=1), c(k=2), c(k=3))
 
 plot.model.dyn(model.default, model.par.k, what="n", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=use.cache, xlab="", xaxt="n")
 par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)
-text(10, 95, expression(hat(n)))
+text(10, 130, expression(hat(n)), col=col[2])
 
 plot.model.dyn(model.default, model.par.k, what="p", pred=TRUE, sim=TRUE, legend=TRUE, legend.pos="bottomright", Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE)
 par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)

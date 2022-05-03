@@ -30,7 +30,7 @@ u.eq.p <- lapply(k.expl, function(k) vapply(u.expl, function(u) {pp <- param.ref
 pi.eq.n <- lapply(k.expl, function(k) vapply(pi.expl, function(pi) {pp <- param.ref; pp["k"] <- k; pp["pi"] <- pi; eqn(pp, init) }, numeric(1)))
 pi.eq.p <- lapply(k.expl, function(k) vapply(pi.expl, function(pi) {pp <- param.ref; pp["k"] <- k; pp["pi"] <- pi; eqp(pp, init) }, numeric(1)))
 
-ylim.n <- c(0,25)
+ylim.n <- c(0,50)
 ylim.p <- c(0,1)
 
 pdf("fig5.pdf", width=9, height=6)

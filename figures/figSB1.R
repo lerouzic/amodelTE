@@ -19,14 +19,14 @@ col <- 1:10
 #~ rep.sim <- 1
 
 N.sim <- 1000
-rep.sim <- 50
+rep.sim <- 20
 
-Tmax <- 10000
+Tmax <- 20000
 
 use.cache=TRUE
 model.default <- c(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0)
 
-uu <- 10^seq(-2,0,length.out=6)#11)
+uu <- 10^seq(-2,0,length.out=7)#11)
 kk <- c(1, 2)
 
 col.k <- setNames(1:length(kk), as.character(kk))
