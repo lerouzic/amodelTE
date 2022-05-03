@@ -4,7 +4,7 @@ library(parallel)
 global.default <- list(
 	mc.cores          = detectCores() - 1,
 	mc.cores.internal = 1,
-	nb.loci           = 1000,
+	nb.loci           = 10000,
 	neutral.loci      = numeric(0), 
 	piRNA.loci        = 1:30,
 	piRNA.prob        = 30/1000,
@@ -189,7 +189,7 @@ Rsimulator <- function(global) {
 }
 
 Simulicron <- function(global) {
-	simulicron.path <- "../../Simulicron/Project_1C/Arnaud.py"
+	simulicron.path <- "../../Simulicron/src/simulicronalpha/simulicron.py"
 	
 	simID <- tempfile()
 	# translation from parameter names in global to Simulicron parameters
@@ -200,20 +200,21 @@ Simulicron <- function(global) {
 		selectionPenalty = log(global$fitness.FUN(1)), #Assuming fitness.FUN(0) = 1
 		tau              = 1,
 		ExcisionRate     = global$u, 
-		FrequencyOfInsertion = 1,
-		Chromosomes      = 1,
+		FrequencyOfInsertion = 1/10,
+		Chromosomes      = 30,
 		RecombinationRate= 0.499,
-		NumberOfInsertions= global$init.TE.ind, # Double check this
+		NumberOfInsertions= 10*global$init.TE.ind, # Double check this
 		piPercentage      = 100*global$piRNA.prob,
 		numberOfPiRNA     = length(global$piRNA.loci),
-		piRNASelection   = "false", #if(length(global$neutral.loci) > 0) log(global$fitness.FUN(1)) else 0,
+		piRNASelection   =  if(length(global$neutral.loci) > 0) "False" else "True",
+		regulationStr    = 1/global$regulation.FUN(0,1) - 1,
 		FileName         = simID
 	)
 	
 	command <- paste0("python3 ", simulicron.path, " ", paste(names(simulicron.param), simulicron.param, sep="=", collapse=" "))
-			
+#~ 	print(command)
 	system(command, ignore.stdout=TRUE)
-		
+			
 	dd <- read.table(simID, header=FALSE)
 	unlink(simID)
 	

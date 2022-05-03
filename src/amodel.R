@@ -61,7 +61,7 @@ pred.eq <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=NA) {
 				return(list(Eq=list(
 #~ 									n=k*sp/(pi*u)*((s/u)^(1/2/k)+(s/u)^(-1/2/k) - 2),
 #~ 									n=k*s/(pi*u)*(1-(s/u)^(1/2/k))/((s/u)^((2*k-1)/2/k)*(1-s*(s/u)^(1/2/k))),
-									n=k*s*pp*(ss/u)^(1/2/k)/pi/ss/(1-s*pp),
+									n=2*k*s*pp*(ss/u)^(1/2/k)/pi/ss/(1-s*pp),
 									p=pp)))
 			}
 	}
@@ -92,7 +92,7 @@ jacob.dtdc <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, ...) {
 
 simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, Tmax=100, rep=1, use.cache=TRUE, cache.dir="../cache/", mean=TRUE, simulator=simulator.default) {
 	simpar <- list(
-		nb.loci           = 1000,
+		nb.loci           = 10000,
 		neutral.loci      = if (sp==0) 1:k else numeric(0), 
 		piRNA.loci        = seq_len(k),
 		piRNA.prob        = pi,
@@ -149,7 +149,8 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, T
 	ans
 }
 
-plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FALSE, legend=TRUE, Tmax=100, N=10000, rep=1, nb.simpt=21, use.cache=TRUE,
+plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FALSE, max=FALSE, legend=TRUE, Tmax=100, N=10000, rep=1, nb.simpt=21, 
+	use.cache=TRUE,
 	xlab="Generations", ylab=if(what=="n") "Copy number" else "Cluster frequency", xlim=c(0,Tmax), ylim=NA,
 	legend.pos="topleft", simulator=simulator.default, ...) {
 
@@ -174,7 +175,7 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 			do.call(simmodel, c(as.list(pp), list(N=N, Tmax=Tmax, rep=rep, use.cache=use.cache, simulator=simulator)))
 		})
 	}
-	
+#~ browser()
 	if (is.na(ylim)) ylim <- c(0, 1.2*max(unlist(sapply(dyn.res, "[[", what)), unlist(sapply(pred.res, "[[", what)), unlist(sapply(sim.res, "[[", what))))
 	
 	plot(NULL, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
@@ -182,7 +183,7 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 	for (ip in seq_along(model.par)) {
 		lines(0:Tmax, dyn.res[[ip]][[what]], col=col[ip])
 		if (pred) {
-			if ("Max" %in% names(pred.res[[ip]]))
+			if (max && "Max" %in% names(pred.res[[ip]]))
 				abline(h=pred.res[[ip]]$Max[[what]], lty=lty.max, col=col[ip])
 			if ("Eq" %in% names(pred.res[[ip]]))
 				abline(h=pred.res[[ip]]$Eq[[what]], lty=lty.eq, col=col[ip])	
