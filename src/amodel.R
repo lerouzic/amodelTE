@@ -150,7 +150,7 @@ simmodel <- function(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0, r=0, N=10000, T
 }
 
 plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FALSE, max=FALSE, legend=TRUE, Tmax=100, N=10000, rep=1, nb.simpt=21, 
-	use.cache=TRUE,
+	use.cache=TRUE, col=1:10,
 	xlab="Generations", ylab=if(what=="n") "Copy number" else "Cluster frequency", xlim=c(0,Tmax), ylim=NA,
 	legend.pos="topleft", simulator=simulator.default, ...) {
 
@@ -175,8 +175,8 @@ plot.model.dyn <- function(model.default, model.par, what="n", pred=TRUE, sim=FA
 			do.call(simmodel, c(as.list(pp), list(N=N, Tmax=Tmax, rep=rep, use.cache=use.cache, simulator=simulator)))
 		})
 	}
-#~ browser()
-	if (is.na(ylim)) ylim <- c(0, 1.2*max(unlist(sapply(dyn.res, "[[", what)), unlist(sapply(pred.res, "[[", what)), unlist(sapply(sim.res, "[[", what))))
+	
+	if (is.na(ylim[1])) ylim <- c(0, 1.2*max(unlist(sapply(dyn.res, "[[", what)), unlist(sapply(pred.res, "[[", what)), unlist(sapply(sim.res, "[[", what))))
 	
 	plot(NULL, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
 
