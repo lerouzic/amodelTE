@@ -2,7 +2,7 @@
 library(parallel)
 
 global.default <- list(
-	mc.cores          = detectCores() - 1,
+	mc.cores          = min(detectCores() - 1, 60),
 	mc.cores.internal = 1,
 	nb.loci           = 10000,
 	neutral.loci      = numeric(0), 
