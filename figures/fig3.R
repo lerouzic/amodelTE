@@ -31,6 +31,13 @@ u.eq.p.n <- lapply(k.expl, function(k) vapply(u.expl, function(u) {pp <- param.r
 pdf("fig3.pdf", width=8, height=3.5)
 layout(t(1:2))
 par(mar=c(5, 4.5, 1, 1))
+
+plot(NULL, xlim=range(u.expl), ylim=c(0, 1), xlab="u", ylab=expression(hat(p)))
+for (ki in seq_along(k.expl)) {
+	lines(u.expl, u.eq.p.a[[ki]], lty=ki, col=col.approx)
+	lines(u.expl, u.eq.p.n[[ki]], lty=ki)
+}
+
 plot(NULL, xlim=range(s.expl), ylim=c(0, 1), xlab="s", ylab=expression(hat(p)))
 for (ki in seq_along(k.expl)) {
 	lines(s.expl, s.eq.p.a[[ki]], lty=ki, col=col.approx)
@@ -39,9 +46,5 @@ for (ki in seq_along(k.expl)) {
 legend("topright", lty=c(seq_along(k.expl), 1), col=c(rep("black", length(k.expl)), col.approx), c(paste0("k = ", k.expl), "Approx"), bty="n")
 
 
-plot(NULL, xlim=range(u.expl), ylim=c(0, 1), xlab="u", ylab=expression(hat(p)))
-for (ki in seq_along(k.expl)) {
-	lines(u.expl, u.eq.p.a[[ki]], lty=ki, col=col.approx)
-	lines(u.expl, u.eq.p.n[[ki]], lty=ki)
-}
+
 dev.off()

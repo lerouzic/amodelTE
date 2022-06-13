@@ -1,8 +1,11 @@
 source("../src/amodel.R")
 
+library(viridis)
+
 param.ref <- c(u=0.1, pi=0.03, k=2, s=0.01, sp=0.01)
 init      <- c(n=1, p=0)
 col       <- c(n="black", p="red", Re="black", Im="blue")
+col[1:2] <- magma(3)[1:2]
 
 mtext.line <- 2.5
 
