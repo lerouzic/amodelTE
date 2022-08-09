@@ -18,15 +18,15 @@ col <- 1:10
 #~ N.sim <- 10000
 #~ rep.sim <- 1
 
-N.sim <- 1000
-rep.sim <- 20
+N.sim <- 5000
+rep.sim <- 50
 
-Tmax <- 20000
+Tmax <- 10000
 
 use.cache=TRUE
 model.default <- c(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0)
 
-uu <- 10^seq(-2,0,length.out=7)#11)
+uu <- 10^seq(-2,-0.7,length.out=5)#11)
 kk <- c(1, 2)
 
 col.k <- setNames(1:length(kk), as.character(kk))
@@ -34,7 +34,7 @@ col.k <- setNames(1:length(kk), as.character(kk))
 model.table <- expand.grid(u=uu, k=kk)
 model.par <- lapply(as.data.frame(t(model.table)), function(sp) setNames(sp, nm=colnames(model.table)))
 
-ylim <- c(0,100)
+ylim <- c(0,150)
 xlim <- range(uu)
 
 pred.res <- lapply(model.par, function(mm) {
