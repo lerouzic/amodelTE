@@ -9,7 +9,7 @@ col[1:2] <- magma(3)[1:2]
 
 mtext.line <- 2.5
 
-density <- 101
+density <- 201
 
 eqn <- function(param, init) {
 	pred.eq(u=param["u"], pi=param["pi"], k=param["k"], s=param["s"], sp=param["sp"], n0=init["n"], p0=init["p"])$Eq$n
@@ -19,7 +19,7 @@ eqp <- function(param, init) {
 	pred.eq(u=param["u"], pi=param["pi"], k=param["k"], s=param["s"], sp=param["sp"], n0=init["n"], p0=init["p"])$Eq$p
 }
 
-s.expl <- seq(0.0001, 0.1, length=density)
+s.expl <- seq(0.0, 0.1, length=density)
 u.expl <- seq(0.001, 1, length=density)
 pi.expl <-seq(0.0001,0.2, length=density) 
 k.expl <- c(1, 2, 5)
