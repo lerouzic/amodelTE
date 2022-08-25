@@ -1,4 +1,7 @@
+#!/usr/bin/env Rscript
+
 source("../src/amodel.R")
+source("../figures/common-colors.R")
 
 library(vioplot)
 
@@ -9,7 +12,7 @@ model.regul   <- c(u=0.17, pi=0.00, s=0.01, k=2, sp=0.00, n0=1, p0=0, r=0.30)
 
 use.cache <- TRUE
 
-mycol=c('Neutral'="gray", 'Del TEs - neutral clusters'="violet", 'Del TEs - del clusters'="green", 'Copy number regul'="darkblue")
+mycol=col[c('Neutral', 'Del TEs - neutral clusters', 'Del TEs - del clusters', 'Copy number regul')]
 Nn <- c(10, 20, 50, 100, 200, 500, 1000)
 rep <- 100
 

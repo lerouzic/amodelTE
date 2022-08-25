@@ -1,8 +1,11 @@
+#!/usr/bin/env Rscript
+
 source("../src/amodel.R")
+source("../figures/common-colors.R")
 
 param.ref <- c(u=0.1, pi=0.03, k=1, s=0.01, sp=0.01)
 init      <- c(n=1, p=0)
-col       <- c(n="black", p="red", Re="black", Im="blue")
+col.k     <- col[c("default","k2","k5")]
 
 density <- 101
 
@@ -35,23 +38,23 @@ par(cex=1)
 
 plot(NULL, xlim=range(s.expl), ylim=c(-0.1, 0.05), xlab="s", ylab=expression("First Eigenvalue "*lambda[1]))
 for (ki in seq_along(k.expl)) {
-	lines(s.expl, Re(s.1D[[ki]]), lty=ki, col=col["Re"])
-	lines(s.expl, Im(s.1D[[ki]]), lty=ki, col=col["Im"])
+	lines(s.expl, Re(s.1D[[ki]]), lty=1, col=col.k[ki])
+	lines(s.expl, Im(s.1D[[ki]]), lty=2, col=col.k[ki])
 }
-legend("bottomleft", lty=c(seq_along(k.expl), 1, 1), col=c(rep("darkgray", length(k.expl)) , col["Re"], col["Im"]), legend=c(paste0("k=",k.expl), "Real","Imaginary"))
+legend("bottomleft", lty=c(1, 1, 1, 1, 2), col=c(col.k, rep("darkgray", 2)), legend=c(paste0("k=",k.expl), "Real","Imaginary"))
 
 
 plot(NULL, xlim=range(u.expl), ylim=c(-0.03, 0.03), xlab="u", ylab=expression("First Eigenvalue "*lambda[1]))
 for (ki in seq_along(k.expl)) {
-	lines(u.expl, Re(u.1D[[ki]]), lty=ki, col=col["Re"])
-	lines(u.expl, Im(u.1D[[ki]]), lty=ki, col=col["Im"])
+	lines(u.expl, Re(u.1D[[ki]]), lty=1, col=col.k[ki])
+	lines(u.expl, Im(u.1D[[ki]]), lty=2, col=col.k[ki])
 }
 
 
 plot(NULL, xlim=range(pi.expl), ylim=c(-0.03, 0.03), xlab=expression(pi), ylab=expression("First Eigenvalue "*lambda[1]))
 for (ki in seq_along(k.expl)) {
-	lines(pi.expl, Re(pi.1D[[ki]]), lty=ki, col=col["Re"])
-	lines(pi.expl, Im(pi.1D[[ki]]), lty=ki, col=col["Im"])
+	lines(pi.expl, Re(pi.1D[[ki]]), lty=1, col=col.k[ki])
+	lines(pi.expl, Im(pi.1D[[ki]]), lty=2, col=col.k[ki])
 }
 
 dev.off()

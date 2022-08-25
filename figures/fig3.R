@@ -1,9 +1,14 @@
+#!/usr/bin/env Rscript
+
 source("../src/amodel.R")
+source("../figures/common-colors.R")
 
 param.ref <- c(u=0.1, pi=0.03, k=1, s=0.01, sp=0)
 init      <- c(n=1, p=0)
 
-col.approx <- "gray"
+col.k <- col[c("default","k2","k5")]
+
+col.approx <- makeTransparent(col.k)
 
 density <- 101
 
@@ -34,16 +39,16 @@ par(mar=c(5, 4.5, 1, 1))
 
 plot(NULL, xlim=range(u.expl), ylim=c(0, 1), xlab="u", ylab=expression(hat(p)))
 for (ki in seq_along(k.expl)) {
-	lines(u.expl, u.eq.p.a[[ki]], lty=ki, col=col.approx)
-	lines(u.expl, u.eq.p.n[[ki]], lty=ki)
+	lines(u.expl, u.eq.p.a[[ki]], lty=1, col=col.approx[ki])
+	lines(u.expl, u.eq.p.n[[ki]], lty=1, col=col.k[ki])
 }
 
 plot(NULL, xlim=range(s.expl), ylim=c(0, 1), xlab="s", ylab=expression(hat(p)))
 for (ki in seq_along(k.expl)) {
-	lines(s.expl, s.eq.p.a[[ki]], lty=ki, col=col.approx)
-	lines(s.expl, s.eq.p.n[[ki]], lty=ki)	
+	lines(s.expl, s.eq.p.a[[ki]], lty=1, col=col.approx[ki])
+	lines(s.expl, s.eq.p.n[[ki]], lty=1, col=col.k[ki])
 }
-legend("topright", lty=c(seq_along(k.expl), 1), col=c(rep("black", length(k.expl)), col.approx), c(paste0("k = ", k.expl), "Approx"), bty="n")
+legend("topright", lty=1, col=c(col.k, col.approx[1]), c(paste0("k = ", k.expl), "Approx"), bty="n")
 
 
 

@@ -1,19 +1,11 @@
 #!/usr/bin/env Rscript
 
 source("../src/amodel.R")
-
-makeTransparent<-function(someColor, alpha=70)
-{ # from https://stackoverflow.com/questions/8047668/transparent-equivalent-of-given-color
-  newColor<-col2rgb(someColor)
-  apply(newColor, 2, function(curcoldata){rgb(red=curcoldata[1], green=curcoldata[2],
-    blue=curcoldata[3],alpha=alpha, maxColorValue=255)})
-}
+source("../figures/common-colors.R")
 
 # neutral model
 lty.max<- 3
 lty.eq <- 2
-
-col <- 1:10
 
 #~ N.sim <- 10000
 #~ rep.sim <- 1
@@ -29,7 +21,7 @@ model.default <- c(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0)
 uu <- 10^seq(-2,-0.7,length.out=5)#11)
 kk <- c(1, 2)
 
-col.k <- setNames(1:length(kk), as.character(kk))
+col.k <- setNames(col[c("default", "k2")], nm=as.character(kk))
 
 model.table <- expand.grid(u=uu, k=kk)
 model.par <- lapply(as.data.frame(t(model.table)), function(sp) setNames(sp, nm=colnames(model.table)))
@@ -58,4 +50,5 @@ pdf("figSB1.pdf", width=5, height=4)
 		points(model.table[model.table[,"k"] == k,"u"], colMeans(final.copies)[model.table[,"k"] == k], col=col.k[as.character(k)], pch=16)
 		lines(model.table[model.table[,"k"] == k,"u"], sapply(pred.res[model.table[,"k"] == k], function(x) x$Eq$n), col=col.k[as.character(k)])
 	}
+	legend("bottomright", pch=16, col=col.k, legend=paste("k=",names(col.k)))
 dev.off()
