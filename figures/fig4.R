@@ -48,7 +48,7 @@ text(10, 16, expression(hat(n)), col=col.k[1])
 text(10, 30, expression(hat(n)), col=col.k[2])
 text(10, 46, expression(hat(n)), col=col.k[3])
 
-plot.model.dyn(model.default, model.par.k, what="p", pred=TRUE, sim=TRUE, legend=TRUE, legend.pos="topleft", Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE, col=col)
+plot.model.dyn(model.default, model.par.k, what="p", pred=TRUE, sim=TRUE, legend=TRUE, legend.pos="topleft", Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE, col=col.k)
 par(xpd=NA); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)
 text(10, 0.70, expression(hat(p)), col=col.k[1])
 text(10, 0.46, expression(hat(p)), col=col.k[2])
