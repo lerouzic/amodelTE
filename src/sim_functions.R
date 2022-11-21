@@ -1,3 +1,23 @@
+library(parallel)
+
+global.default <- list(
+	mc.cores          = min(detectCores() - 1, 60),
+	mc.cores.internal = 1,
+	nb.loci           = 10000,
+	neutral.loci      = numeric(0), 
+	piRNA.loci        = 1:30,
+	piRNA.prob        = 30/1000,
+	fitness.FUN       = function(n.sel)    exp(-n.sel*0.01),
+	regulation.FUN    = function(n.piRNA, n)  if (n.piRNA == 0) 1 else 0,
+	u                 = 0.1,
+	G                 = 100,
+	summary.every     = 10,
+	N                 = 1000,
+	rep               = 10,
+	init.TE.ind       = 1,
+	simulator         = NA
+)
+
 
 Simulicron <- function(global) {
 	simulicron.path <- "../../Simulicron/src/simulicronalpha/simulicron.py"
