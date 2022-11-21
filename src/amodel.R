@@ -1,16 +1,6 @@
 source("../src/sim_functions.R")
 
 simulator.default = "Simulicron"
-#~ simulator.default = "Rsimulator"
-
-
-cc83 <- function(u=function(n) 0.1, v=0, n0=1, Tmax=100, dlw=function(n) -0.01*n) {
-	ans <- c(n0, rep(NA, Tmax))
-	for (t in 1:Tmax) {
-		ans[t+1] <- ans[t] + ans[t]*(u(ans[t]) - v + ans[t]*dlw(ans[t]))
-	}
-	ans
-}
 
 model <- function(t, y, parms) {
 	with(as.list(c(y, parms)), {
