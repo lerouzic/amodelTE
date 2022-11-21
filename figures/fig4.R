@@ -33,7 +33,7 @@ text(10, 18, expression(hat(n)), col=col.s[3])
 
 plot.model.dyn(model.default, model.par.s, what="p", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE, xlab="", xaxt="n", col=col.s)
 axis(1, labels=FALSE)
-legend("bottomright", paste0("s=", sapply(model.par.s, "[", "s")), lty=1, col=col[seq_along(model.par.s)], bty="n")
+legend("bottomright", paste0("s=", sapply(model.par.s, "[", "s")), lty=1, col=col.s[seq_along(model.par.s)], bty="n")
 text(10, 1.05, expression(hat(p)), col=col.s[1])
 text(10, 0.71, expression(hat(p)), col=col.s[2])
 text(10, 0.45, expression(hat(p)), col=col.s[3])
