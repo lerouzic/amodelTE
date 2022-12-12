@@ -43,7 +43,7 @@ ss.all <- unlist(lapply(seq_along(ss.neutral), function(i) c(ss.neutral[i], ss.d
 
 
 
-pdf("fig6A.pdf", height=5, width=5)
+pdf("fig7A.pdf", height=5, width=5)
 	plot(Nn, sapply(ss.neutral, function(x) var(x$n[nrow(x$n),])/mean(x$n[nrow(x$n),])), ylim=c(0.02, 22), log="xy", xlab="Population size N", ylab=expression("Var("*bar(n)*")"/bar(n)), pch=19, col=mycol[1])
 	points(Nn, sapply(ss.dtnc, function(x) var(x$n[nrow(x$n),])/mean(x$n[nrow(x$n),])), pch=19, col=mycol[2])
 	points(Nn, sapply(ss.dtdc, function(x) var(x$n[nrow(x$n),])/mean(x$n[nrow(x$n),])), pch=19, col=mycol[3])
@@ -66,7 +66,7 @@ model.regul.plot <- c(u=0.07, pi=0.00, s=0.01, k=2, sp=0.00, n0=1, p0=0, r=0.30)
 ss.dtdc.plot  <-  do.call(simmodel, c(as.list(model.dtdc.plot),  list(N=N.plot, Tmax=Tmax.plot, rep=num.plot, use.cache=use.cache, mean=FALSE)))
 ss.regul.plot <-  do.call(simmodel, c(as.list(model.regul.plot), list(N=N.plot, Tmax=Tmax.plot, rep=num.plot, use.cache=use.cache, mean=FALSE)))
 
-pdf("fig6B.pdf", height=5, width=5)
+pdf("fig7B.pdf", height=5, width=5)
 	plot(NULL, xlim=c(0,Tmax.plot), ylim=c(0, 70), xlab="Generations", ylab=expression("Average copy number "*bar(n)))
 	for (i in seq_len(num.plot)) {
 		lines(ss.dtdc.plot$n[,i], lty=1, col=mycol[3])

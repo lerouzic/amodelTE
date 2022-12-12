@@ -3,123 +3,56 @@
 source("../src/amodel.R")
 source("../figures/common-colors.R")
 
+# deleterious TEs - deleterious clusters
 
-param.ref <- c(u=0.1, pi=0.03, k=1, s=0.01, sp=0.01)
-init      <- c(n=1, p=0)
+lty.max<- 3
+lty.eq <- 2
 
-mtext.line <- 2.5
+N.sim <- 1000
+rep.sim <- 20
+Tmax <- 300
 
-density <- 201
+use.cache=TRUE
+pdf("fig5.pdf", width=8, height=6)
 
-eqn <- function(param, init) {
-	pred.eq(u=param["u"], pi=param["pi"], k=param["k"], s=param["s"], sp=param["sp"], n0=init["n"], p0=init["p"])$Eq$n
-}
+layout(rbind(1:2, 3:4))
+par(mar=c(1,4,1,1), oma=c(3,0,0,0))
 
-eqp <- function(param, init) {
-	pred.eq(u=param["u"], pi=param["pi"], k=param["k"], s=param["s"], sp=param["sp"], n0=init["n"], p0=init["p"])$Eq$p
-}
+model.default <- c(u=0.1, pi=0.03, s=0.01, k=1, sp=0.01, n0=1, p0=0)
 
-s.expl <- seq(0.0, 0.1, length=density)
-u.expl <- seq(0.001, 1, length=density)
-pi.expl <-seq(0.0001,0.2, length=density) 
-k.expl <- c(1, 2, 5)
+model.par.s <- list(c(s=0, sp=0), c(s=0.01, sp=0.01), c(s=0.02, sp=0.02))
+col.s       <- col[c("default", "s+", "s++")]
 
-s.eq.n <- lapply(k.expl, function(k) vapply(s.expl, function(s) {pp <- param.ref; pp["k"] <- k; pp["s"] <- pp["sp"] <- s; eqn(pp, init) }, numeric(1)))
-s.eq.p <- lapply(k.expl, function(k) vapply(s.expl, function(s) {pp <- param.ref; pp["k"] <- k; pp["s"] <- pp["sp"] <- s; eqp(pp, init) }, numeric(1)))
-
-u.eq.n <- lapply(k.expl, function(k) vapply(u.expl, function(u) {pp <- param.ref; pp["k"] <- k; pp["u"] <- u; eqn(pp, init) }, numeric(1)))
-u.eq.p <- lapply(k.expl, function(k) vapply(u.expl, function(u) {pp <- param.ref; pp["k"] <- k; pp["u"] <- u; eqp(pp, init) }, numeric(1)))
-
-pi.eq.n <- lapply(k.expl, function(k) vapply(pi.expl, function(pi) {pp <- param.ref; pp["k"] <- k; pp["pi"] <- pi; eqn(pp, init) }, numeric(1)))
-pi.eq.p <- lapply(k.expl, function(k) vapply(pi.expl, function(pi) {pp <- param.ref; pp["k"] <- k; pp["pi"] <- pi; eqp(pp, init) }, numeric(1)))
-
-ylim.n <- c(0,80)
-ylim.p <- c(0,1)
-
-col.k  <- col[c("default","k2","k5")]
-col.s  <- col[c("default", "s+", "s++")]
-col.u  <- col[c("u+","default","u-")]
-
-pdf("fig5.pdf", width=9, height=6)
-layout(matrix(1:6, ncol=3))
-par(cex=1, mar=c(1,1,1,1), oma=c(5,4,0,0))
-
-plot(NULL, xlim=range(s.expl), ylim=ylim.n, xlab="", ylab="", xaxt="n", yaxt="n")
-for (ki in seq_along(k.expl)) {
-	lines(s.expl, s.eq.n[[ki]], lty=1, col=col.k[ki])
-}
-points(	x=c(0, 0.01, 0.02), 
-		y=c(	eqn({pp <- param.ref; pp["s"] <- pp["sp"] <- 0; pp}, init), 
-				eqn({pp <- param.ref; pp["s"] <- pp["sp"]<- 0.01; pp}, init), 
-				eqn({pp <- param.ref; pp["s"] <- pp["sp"]<- 0.02; pp}, init)), 
-		pch=16, col=col.s)
-legend("topright", lty=1, col=col.k, paste0("k = ", k.expl))
-mtext(expression("Copy number ("*hat(n)*")"), 2, line=3, xpd=NA)
+plot.model.dyn(model.default, model.par.s, what="n", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=use.cache, xlab="", xaxt="n", col=col.s)
 axis(1, labels=FALSE)
-axis(2, xpd=NA)
-
-plot(NULL, xlim=range(s.expl), ylim=c(0,1), xlab="", ylab="", xaxt="n", yaxt="n")
-for (ki in seq_along(k.expl)) {
-	lines(s.expl, s.eq.p[[ki]], lty=1, col=col.k[ki])
-}
-points(	x=c(0, 0.01, 0.02), 
-		y=c(	eqp({pp <- param.ref; pp["s"] <- pp["sp"] <- 0; pp}, init), 
-				eqp({pp <- param.ref; pp["s"] <- pp["sp"]<- 0.01; pp}, init), 
-				eqp({pp <- param.ref; pp["s"] <- pp["sp"]<- 0.02; pp}, init)), 
-		pch=16, col=col.s)
-mtext(expression("Cluster frequency ("*hat(p)*")"), 2, line=3, xpd=NA)
-mtext("Selection coefficient (s)", 1, line=3, xpd=NA)
-axis(1, xpd=NA)
-axis(2, xpd=NA)
-
-plot(NULL, xlim=range(u.expl), ylim=ylim.n, xlab="", ylab="", xaxt="n", yaxt="n")
-for (ki in seq_along(k.expl)) {
-	lines(u.expl, u.eq.n[[ki]], lty=1, col=col.k[ki])
-}
-points(	x=c(param.ref["u"],param.ref["u"],param.ref["u"]), 
-		y=c(	eqn({pp <- param.ref; pp["k"] <- 1; pp}, init), 
-				eqn({pp <- param.ref; pp["k"] <- 2; pp}, init), 
-				eqn({pp <- param.ref; pp["k"] <- 5; pp}, init)), 
-		pch=16, col=col.k)
 axis(1, labels=FALSE)
-axis(2, labels=FALSE)
+text(10, 72, expression(hat(n)), col=col.s[1])
+text(10, 10, expression(hat(n)), col=col.s[2])
+text(10, 18, expression(hat(n)), col=col.s[3])
 
-plot(NULL, xlim=range(u.expl), ylim=ylim.p, xlab="", ylab="", xaxt="n", yaxt="n")
-for (ki in seq_along(k.expl)) {
-	lines(u.expl, u.eq.p[[ki]], lty=1, col=col.k[ki])
-}
-points(	x=c(param.ref["u"],param.ref["u"],param.ref["u"]), 
-		y=c(	eqp({pp <- param.ref; pp["k"] <- 1; pp}, init), 
-				eqp({pp <- param.ref; pp["k"] <- 2; pp}, init), 
-				eqp({pp <- param.ref; pp["k"] <- 5; pp}, init)), 
-		pch=16, col=col.k)
-mtext("Transposition rate (u)", 1, line=3, xpd=NA)
-axis(1, xpd=NA)
-axis(2, labels=FALSE)
 
-plot(NULL, xlim=range(pi.expl), ylim=ylim.n, xlab="", ylab="", xaxt="n", yaxt="n")
-for (ki in seq_along(k.expl)) {
-	lines(pi.expl, pi.eq.n[[ki]], lty=1, col=col.k[ki])
-}
-points(	x=c(param.ref["pi"],param.ref["pi"],param.ref["pi"]), 
-		y=c(	eqn({pp <- param.ref; pp["k"] <- 1; pp}, init), 
-				eqn({pp <- param.ref; pp["k"] <- 2; pp}, init), 
-				eqn({pp <- param.ref; pp["k"] <- 5; pp}, init)), 
-		pch=16, col=col.k)
+plot.model.dyn(model.default, model.par.s, what="p", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE, xlab="", xaxt="n", col=col.s)
 axis(1, labels=FALSE)
-axis(2, labels=FALSE)
+legend("bottomright", paste0("s=", sapply(model.par.s, "[", "s")), lty=1, col=col.s[seq_along(model.par.s)], bty="n")
+text(10, 1.05, expression(hat(p)), col=col.s[1])
+text(10, 0.71, expression(hat(p)), col=col.s[2])
+text(10, 0.45, expression(hat(p)), col=col.s[3])
 
-plot(NULL, xlim=range(pi.expl), ylim=ylim.p, xlab="", ylab="", xaxt="n", yaxt="n")
-for (ki in seq_along(k.expl)) {
-	lines(pi.expl, pi.eq.p[[ki]], lty=1, col=col.k[ki])
-}
-points(	x=c(param.ref["pi"],param.ref["pi"],param.ref["pi"]), 
-		y=c(	eqp({pp <- param.ref; pp["k"] <- 1; pp}, init), 
-				eqp({pp <- param.ref; pp["k"] <- 2; pp}, init), 
-				eqp({pp <- param.ref; pp["k"] <- 5; pp}, init)), 
-		pch=16, col=col.k)
-mtext(expression("Cluster size ("*pi*")"), 1, line=3, xpd=NA)
-axis(1, xpd=NA)
-axis(2, labels=FALSE)
+
+model.par.k <- list(c(k=1), c(k=2), c(k=5))
+col.k       <- col[c("default","k2","k5")]
+
+plot.model.dyn(model.default, model.par.k, what="n", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=use.cache, xlab="", xaxt="n", col=col.k)
+par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)
+text(10, 16, expression(hat(n)), col=col.k[1])
+text(10, 30, expression(hat(n)), col=col.k[2])
+text(10, 46, expression(hat(n)), col=col.k[3])
+
+plot.model.dyn(model.default, model.par.k, what="p", pred=TRUE, sim=TRUE, legend=TRUE, legend.pos="topleft", Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE, col=col.k)
+par(xpd=NA); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)
+text(10, 0.70, expression(hat(p)), col=col.k[1])
+text(10, 0.46, expression(hat(p)), col=col.k[2])
+text(10, 0.24, expression(hat(p)), col=col.k[3])
 
 dev.off()
+

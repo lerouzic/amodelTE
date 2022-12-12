@@ -3,56 +3,53 @@
 source("../src/amodel.R")
 source("../figures/common-colors.R")
 
-# deleterious TEs - deleterious clusters
+param.ref <- c(u=0.1, pi=0.03, k=1, s=0.01, sp=0)
+init      <- c(n=1, p=0)
 
-lty.max<- 3
-lty.eq <- 2
+col.k <- col[c("default","k2","k5")]
 
-N.sim <- 1000
-rep.sim <- 20
-Tmax <- 300
+col.approx <- makeTransparent(col.k)
 
-use.cache=TRUE
-pdf("fig4.pdf", width=8, height=6)
+density <- 101
 
-layout(rbind(1:2, 3:4))
-par(mar=c(1,4,1,1), oma=c(3,0,0,0))
+eqp.a <- function(param, init) {
+	c(p=pred.eq(u=param["u"], pi=param["pi"], k=param["k"], s=param["s"], sp=param["sp"], n0=init["n"], p0=init["p"])$Eq$p)
+}
 
-model.default <- c(u=0.1, pi=0.03, s=0.01, k=1, sp=0.01, n0=1, p0=0)
+eqp.n <- function(param, init) {
+	c(p=num.eq(u=param["u"], pi=param["pi"], k=param["k"], s=param["s"], sp=param["sp"], n0=init["n"], p0=init["p"])$Eq$p)
+}
 
-model.par.s <- list(c(s=0, sp=0), c(s=0.01, sp=0.01), c(s=0.02, sp=0.02))
-col.s       <- col[c("default", "s+", "s++")]
+s.expl <- seq(0.0001, 0.1, length=density)
+u.expl <- seq(0.001, 1, length=density)
+k.expl <- c(1, 2, 5)
 
-plot.model.dyn(model.default, model.par.s, what="n", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=use.cache, xlab="", xaxt="n", col=col.s)
-axis(1, labels=FALSE)
-axis(1, labels=FALSE)
-text(10, 72, expression(hat(n)), col=col.s[1])
-text(10, 10, expression(hat(n)), col=col.s[2])
-text(10, 18, expression(hat(n)), col=col.s[3])
+s.eq.p.a <- lapply(k.expl, function(k) vapply(s.expl, function(s) {pp <- param.ref; pp["k"] <- k; pp["s"] <- s; eqp.a(pp, init) }, numeric(1)))
+s.eq.p.n <- lapply(k.expl, function(k) vapply(s.expl, function(s) {pp <- param.ref; pp["k"] <- k; pp["s"] <- s; eqp.n(pp, init) }, numeric(1)))
 
-
-plot.model.dyn(model.default, model.par.s, what="p", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE, xlab="", xaxt="n", col=col.s)
-axis(1, labels=FALSE)
-legend("bottomright", paste0("s=", sapply(model.par.s, "[", "s")), lty=1, col=col.s[seq_along(model.par.s)], bty="n")
-text(10, 1.05, expression(hat(p)), col=col.s[1])
-text(10, 0.71, expression(hat(p)), col=col.s[2])
-text(10, 0.45, expression(hat(p)), col=col.s[3])
+u.eq.p.a <- lapply(k.expl, function(k) vapply(u.expl, function(u) {pp <- param.ref; pp["k"] <- k; pp["u"] <- u; eqp.a(pp, init) }, numeric(1)))
+u.eq.p.n <- lapply(k.expl, function(k) vapply(u.expl, function(u) {pp <- param.ref; pp["k"] <- k; pp["u"] <- u; eqp.n(pp, init) }, numeric(1)))
 
 
-model.par.k <- list(c(k=1), c(k=2), c(k=5))
-col.k       <- col[c("default","k2","k5")]
 
-plot.model.dyn(model.default, model.par.k, what="n", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=use.cache, xlab="", xaxt="n", col=col.k)
-par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)
-text(10, 16, expression(hat(n)), col=col.k[1])
-text(10, 30, expression(hat(n)), col=col.k[2])
-text(10, 46, expression(hat(n)), col=col.k[3])
 
-plot.model.dyn(model.default, model.par.k, what="p", pred=TRUE, sim=TRUE, legend=TRUE, legend.pos="topleft", Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE, col=col.k)
-par(xpd=NA); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)
-text(10, 0.70, expression(hat(p)), col=col.k[1])
-text(10, 0.46, expression(hat(p)), col=col.k[2])
-text(10, 0.24, expression(hat(p)), col=col.k[3])
+pdf("fig4.pdf", width=8, height=3.5)
+layout(t(1:2))
+par(mar=c(5, 4.5, 1, 1))
+
+plot(NULL, xlim=range(u.expl), ylim=c(0, 1), xlab="Transposition rate (u)", ylab=expression("Eq. TE cluster insertion frequency "*hat(p)))
+for (ki in seq_along(k.expl)) {
+	lines(u.expl, u.eq.p.a[[ki]], lty=1, col=col.approx[ki])
+	lines(u.expl, u.eq.p.n[[ki]], lty=1, col=col.k[ki])
+}
+
+plot(NULL, xlim=range(s.expl), ylim=c(0, 1), xlab="Selection coefficient (s)", ylab="")
+for (ki in seq_along(k.expl)) {
+	lines(s.expl, s.eq.p.a[[ki]], lty=1, col=col.approx[ki])
+	lines(s.expl, s.eq.p.n[[ki]], lty=1, col=col.k[ki])
+}
+legend("topright", lty=1, col=c(col.k, col.approx[1]), c(paste0("k = ", k.expl), "Approx"), bty="n")
+
+
 
 dev.off()
-
