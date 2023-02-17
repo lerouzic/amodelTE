@@ -13,10 +13,10 @@ use.cache=TRUE
 
 Tmax <- 150
 
-pdf("fig3.pdf", width=8, height=6)
+pdf("fig3.pdf",  width=5.5, height=3.9, pointsize=7)
 
 layout(rbind(1:2, 3:4))
-par(mar=c(1,4,1,1), oma=c(3,0,0,0))
+par(mar=c(1,4,1,1), oma=c(3,0,0,0), cex=1)
 
 model.default <- c(u=0.1, pi=0.03, s=0.01, k=1, sp=0, n0=1, p0=0)
 
@@ -44,7 +44,7 @@ model.par.k <- list(c(k=1), c(k=2), c(k=5))
 col.k       <- col[c("default","k2","k5")]
 
 plot.model.dyn(model.default, model.par.k, what="n", pred=TRUE, sim=TRUE, max=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=use.cache, xlab="", xaxt="n", col=col.k)
-par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)
+par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=1); par(xpd=FALSE)
 text(10, 28, expression(n*"*"), col=col.k[1])
 text(10, 33.5, expression(n*"*"), col=col.k[2])
 text(10, 41, expression(n*"*"), col=col.k[3])
@@ -53,7 +53,7 @@ text(80, 3, expression(hat(n)*"="), col=col.k[2])
 text(88, 3, expression(hat(n)), col=col.k[3])
 
 plot.model.dyn(model.default, model.par.k, what="p", pred=TRUE, sim=TRUE, max=FALSE, legend=TRUE, legend.pos="bottomright", Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE, col=col.k)
-par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)
+par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=1); par(xpd=FALSE)
 text(10, 0.90, expression(hat(p)), col=col.k[1])
 text(10, 0.60, expression(hat(p)), col=col.k[2])
 text(10, 0.31, expression(hat(p)), col=col.k[3])

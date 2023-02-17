@@ -40,9 +40,9 @@ col.k  <- col[c("default","k2","k5")]
 col.s  <- col[c("default", "s+", "s++")]
 col.u  <- col[c("u+","default","u-")]
 
-pdf("fig6.pdf", width=9, height=6)
+pdf("fig6.pdf",  width=5.5, height=3.9, pointsize=7)
 layout(matrix(1:6, ncol=3))
-par(cex=1, mar=c(1,1,1,1), oma=c(5,4,0,0))
+par(cex=1, mar=c(1,1,1,1), oma=c(5,4,0,0), cex=1)
 
 plot(NULL, xlim=range(s.expl), ylim=ylim.n, xlab="", ylab="", xaxt="n", yaxt="n")
 for (ki in seq_along(k.expl)) {

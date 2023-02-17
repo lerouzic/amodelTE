@@ -32,7 +32,7 @@ pi.1D <- lapply(k.expl, function(k) vapply(pi.expl, function(pi) { pp <- param.r
 
 
 
-pdf("figSA1.pdf", width=15, height=5)
+pdf("figSA1.pdf", height=3.5, width=7.5, pointsize=7)
 layout(rbind(1:3))
 par(cex=1)
 

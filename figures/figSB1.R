@@ -42,7 +42,7 @@ sim.res <- lapply(model.par, function(mm) {
 })
 final.copies <- sapply(sim.res, function(x) x$n[nrow(x$n),])
 
-pdf("figSB1.pdf", width=5, height=4)
+pdf("figSB1.pdf", height=3.5, width=3.5, pointsize=7)
 	plot(NULL, xlab="Transposition rate u", ylab=paste0("Copy number after ", Tmax, " generations"), xlim=xlim, ylim=ylim, log="x", col="gray")
 	
 	for (k in kk) {

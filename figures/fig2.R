@@ -20,9 +20,9 @@ use.cache=TRUE
 model.default <- c(u=0.1, pi=0.03, s=0, k=1, sp=0, n0=1, p0=0)
 
 
-pdf("fig2.pdf", width=8, height=6)
+pdf("fig2.pdf", width=5.5, height=3.9, pointsize=7)
 layout(rbind(1:2, 3:4))
-par(mar=c(1,4,1,1), oma=c(3,0,0,0))
+par(mar=c(1,4,1,1), oma=c(3,0,0,0), cex=1)
 
 ###### Effect of transposition rate
 model.par.u <- list(c(u=0.2), c(u=0.1), c(u=0.05))
@@ -43,12 +43,12 @@ model.par.k <- list(c(k=1), c(k=2), c(k=3))
 col.k       <- col[c("default","k2","k5")]
 
 plot.model.dyn(model.default, model.par.k, what="n", pred=TRUE, sim=TRUE, legend=TRUE, legend.pos="bottomright", Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=use.cache, xlab="", xaxt="n", col=col.k, ylim=c(0, 200))
-par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)
+par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=1); par(xpd=FALSE)
 text(x=c(10, 10, 10), y=c(58, 125, 190), labels=c(expression(hat(n)), expression(hat(n)), expression(hat(n))), col=col.k) 
 
 
 plot.model.dyn(model.default, model.par.k, what="p", pred=TRUE, sim=TRUE, legend=FALSE, Tmax=Tmax, N=N.sim, rep=rep.sim, use.cache=TRUE, col=col.k, ylim=c(0,1.1))
-par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=0.8); par(xpd=FALSE)
+par(xpd=NA); axis(1); mtext("Time (generations)", side=1, line=2.5, cex=1); par(xpd=FALSE)
 text(x=c(10, 28, 42), y=c(1.05, 1.05, 1.05), labels=c(expression(hat(p)*"="), expression(hat(p)*"="), expression(hat(p))), col=col.k) 
 
 

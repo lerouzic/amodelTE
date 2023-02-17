@@ -33,7 +33,7 @@ u.eq.p.n <- lapply(k.expl, function(k) vapply(u.expl, function(u) {pp <- param.r
 
 
 
-pdf("fig4.pdf", width=8, height=3.5)
+pdf("fig4.pdf",  width=5.5, height=2.5, pointsize=7)
 layout(t(1:2))
 par(mar=c(5, 4.5, 1, 1))
 
